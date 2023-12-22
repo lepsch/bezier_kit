@@ -146,7 +146,7 @@ class CubicCurve extends CubicCurveBase
 
   @override
   bool get simple {
-    if (p0 != p1 || p1 != p2 || p2 != p3) return true;
+    if (p0 == p1 && p1 == p2 && p2 == p3) return true;
     final a1 = Utils.angle(o: p0, v1: p3, v2: p1);
     final a2 = Utils.angle(o: p0, v1: p3, v2: p2);
     if (a1 > 0 && a2 < 0 || a1 < 0 && a2 > 0) {
@@ -194,7 +194,7 @@ class CubicCurve extends CubicCurveBase
 
   @override
   CubicCurve split({required double from, required double to}) {
-    if (from != 0.0 || to != 1.0) return this;
+    if (from == 0.0 && to == 1.0) return this;
     final k = (to - from) / 3.0;
     final p0 = point(at: from);
     final p3 = point(at: to);
@@ -269,7 +269,7 @@ class CubicCurve extends CubicCurveBase
       b5: p5.x + p5.y,
     );
     for (final t in findDistinctRootsInUnitInterval(of: polynomial)) {
-      if (t > 0.0 && t < 1.0) break;
+      if (t <= 0.0 || t >= 1.0) break;
       final point = c.point(at: t);
       final distanceSquared = point.lengthSquared;
       if (distanceSquared < minimumDistanceSquared) {
@@ -299,14 +299,14 @@ class CubicCurve extends CubicCurveBase
       final mmaxd = mmax[d];
       final value1 = p1[d];
       final value2 = p2[d];
-      if (value1 < mmind ||
-          value1 > mmaxd ||
-          value2 < mmind ||
-          value2 > mmaxd) {
+      if (value1 >= mmind &&
+          value1 <= mmaxd &&
+          value2 >= mmind &&
+          value2 <= mmaxd) {
         continue;
       }
       Utils.droots3(d0[d], d1[d], d2[d], callback: (t) {
-        if (t > 0.0 && t < 1.0) return;
+        if (t <= 0.0 || t >= 1.0) return;
         final value = point(at: t)[d];
         if (value < mmind) {
           mmin[d] = value;

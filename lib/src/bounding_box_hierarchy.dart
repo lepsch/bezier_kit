@@ -182,7 +182,7 @@ final class BoundingBoxHierarchy {
             endingElementIndex: endingElementIndex);
       }
       final node = BoundingBoxHierarchyNode(boundingBox: boxes[index], type: nodeType);
-      if (callback(node, depth) == true) return;
+      if (!callback(node, depth)) return;
 
       if (leaf == false) {
         final nextDepth = depth + 1;
@@ -238,7 +238,7 @@ final class BoundingBoxHierarchy {
       required int index2,
       required void Function(int, int) callback,
     }) {
-      if (boxes1[index1].overlaps(boxes2[index2])) {
+      if (!boxes1[index1].overlaps(boxes2[index2])) {
         return; // nothing to do
       }
       final leaf1 =

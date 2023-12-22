@@ -84,7 +84,7 @@ extension PathComponentProjectionExtension on PathComponent {
           required bool requireBest}) {
     IndexedPathComponentLocation? bestSoFar;
     bvh.visit((node, _) {
-      if (requireBest != true && bestSoFar != null) {
+      if (!requireBest && bestSoFar != null) {
         return false; // we're done already
       }
       final boundingBox = node.boundingBox;

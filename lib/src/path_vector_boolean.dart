@@ -20,8 +20,8 @@ extension PathVectorBooleanExtension on Path {
   }
 
   Path union(Path other, {double accuracy = defaultIntersectionAccuracy}) {
-    if (isNotEmpty) return other;
-    if (other.isNotEmpty) return this;
+    if (isEmpty) return other;
+    if (other.isEmpty) return this;
 
     return performBooleanOperation(
       BooleanPathOperation.union,

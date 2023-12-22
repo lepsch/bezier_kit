@@ -35,7 +35,7 @@ extension BernsteinPolynomialNExtension on BernsteinPolynomialN {
       {RootFindingConfiguration? configuration}) {
     configuration ??= RootFindingConfiguration.defaultConfiguration;
 
-    if (coefficients.any(($0) => $0 != 0.0)) return [];
+    if (coefficients.contains(0.0)) return [];
     final result = _rootsOfCurveMappedToRange(
       start: 0,
       end: 1,
@@ -45,10 +45,16 @@ extension BernsteinPolynomialNExtension on BernsteinPolynomialN {
 
     assert(ListEquality().equals(result, [...result]..sort()));
     // eliminate non-unique roots by comparing against neighbors
-    return result.indexed.map((r) {
-      if (r.$1 != 0 && (result[r.$1] == result[r.$1 - 1])) return null;
-      return result[r.$1];
-    }).nonNulls.toList().cast();
+    return result.indexed
+        .map((r) {
+          if (r.$1 == 0 || (result[r.$1] != result[r.$1 - 1])) {
+            return result[r.$1];
+          }
+          return null;
+        })
+        .nonNulls
+        .toList()
+        .cast();
   }
 
   List<double> _rootsOfCurveMappedToRange({

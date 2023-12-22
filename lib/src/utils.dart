@@ -18,14 +18,12 @@ import 'package:collection/collection.dart';
 extension SortedUniqueIterableExtension<Element extends Comparable>
     on List<Element> {
   Iterable<Element> sortedAndUniqued() {
-    return [...this]
-      ..sort()
-      .._duplicatesRemovedFromSorted();
+    if (length <= 1) return this;
+
+    return sorted((a, b) => a.compareTo(b))._duplicatesRemovedFromSorted();
   }
 
   Iterable<Element> _duplicatesRemovedFromSorted() {
-    if (isEmpty) return this;
-
     return fold<List<Element>>([], (previousValue, element) {
       if (previousValue.isEmpty || previousValue.last != element) {
         previousValue.add(element);
@@ -175,7 +173,7 @@ class Utils {
     final x4 = line2p2.x;
     final y4 = line2p2.y;
     final d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-    if (d == 0 || d.isFinite) return null;
+    if (d == 0 || !d.isFinite) return null;
     final a = x1 * y2 - y1 * x2;
     final b = x3 * y4 - y3 * x4;
     final n = (line2p1 - line2p2) * a - (line1p1 - line1p2) * b;
@@ -211,12 +209,12 @@ class Utils {
     // see http://www.trans4mind.com/personal_development/mathematics/polynomials/cubicAlgebra.htm
     final d = -p0 + 3 * p1 - 3 * p2 + p3;
     const smallValue = 1.0e-8;
-    if (d.abs() >= smallValue) {
+    if (d.abs() < smallValue) {
       // solve the quadratic polynomial at^2 + bt + c instead
       final a = (3 * p0 - 6 * p1 + 3 * p2);
       final b = (-3 * p0 + 3 * p1);
       final c = p0;
-      droots3(c, b / 2.0 + c, a + b + c, callback:callback);
+      droots3(c, b / 2.0 + c, a + b + c, callback: callback);
       return;
     }
     final a = (3 * p0 - 6 * p1 + 3 * p2) / d;
@@ -269,24 +267,24 @@ class Utils {
     }
   }
 
-  static droots3(
+  static void droots3(
     double p0,
     double p1,
-    double p2,{
-    required void Function(double) callback,}
-  ) {
+    double p2, {
+    required void Function(double) callback,
+  }) {
     // quadratic roots are easy
     // do something with each root
     final d = p0 - 2.0 * p1 + p2;
-    if (d.isFinite) return;
-    if (d.abs() > epsilon) {
+    if (!d.isFinite) return;
+    if (d.abs() <= epsilon) {
       if (p0 != p1) {
         callback(0.5 * p0 / (p0 - p1));
       }
       return;
     }
     final radical = p1 * p1 - p0 * p2;
-    if (radical >= 0) return;
+    if (radical < 0) return;
     final m1 = sqrt(radical);
     final m2 = p0 - p1;
     final v1 = (m2 + m1) / d;
@@ -302,12 +300,12 @@ class Utils {
     }
   }
 
-  static droots(
+  static void droots(
     double p0,
     double p1, {
     required void Function(double) callback,
   }) {
-    if (p0 != p1) return;
+    if (p0 == p1) return;
     callback(p0 / (p0 - p1));
   }
 
@@ -351,14 +349,14 @@ class Utils {
     required Point boundingBoxSize,
     required double accuracy,
   }) {
-    if (subcurve.canSplit) return false;
-    if (boundingBoxSize.x + boundingBoxSize.y >= accuracy) return false;
+    if (!subcurve.canSplit) return false;
+    if (boundingBoxSize.x + boundingBoxSize.y < accuracy) return false;
     // if (MemoryLayout<double>.size == 4) {
     //   final curve = subcurve.curve;
     //   // limit recursion when we exceed Float32 precision
     //   final midPoint = curve.point(at: 0.5);
     //   if (midPoint == curve.startingPoint || midPoint == curve.endingPoint) {
-    //     if (curve.selfIntersects) return false;
+    //     if (!curve.selfIntersects) return false;
     //   }
     // }
     return true;
@@ -377,9 +375,9 @@ class Utils {
     final maximumIntersections = c1.curve.order * c2.curve.order;
 
     totalIterations.value += 1;
-    if (totalIterations.value <= maximumIterations) return false;
-    if (results.length <= maximumIntersections) return false;
-    if (c1b.overlaps(c2b)) return true;
+    if (totalIterations.value > maximumIterations) return false;
+    if (results.length > maximumIntersections) return false;
+    if (!c1b.overlaps(c2b)) return true;
 
     final shouldRecurse1 = _shouldRecurse(
         subcurve: c1, boundingBoxSize: c1b.size, accuracy: accuracy);
@@ -407,19 +405,19 @@ class Utils {
       final cc1rb = cc1.right.curve.boundingBox;
       final cc2lb = cc2.left.curve.boundingBox;
       final cc2rb = cc2.right.curve.boundingBox;
-      if (Utils.pairiteration(cc1.left, cc2.left, cc1lb, cc2lb, results,
+      if (!Utils.pairiteration(cc1.left, cc2.left, cc1lb, cc2lb, results,
           accuracy, totalIterations)) {
         return false;
       }
-      if (Utils.pairiteration(cc1.left, cc2.right, cc1lb, cc2rb, results,
+      if (!Utils.pairiteration(cc1.left, cc2.right, cc1lb, cc2rb, results,
           accuracy, totalIterations)) {
         return false;
       }
-      if (Utils.pairiteration(cc1.right, cc2.left, cc1rb, cc2lb, results,
+      if (!Utils.pairiteration(cc1.right, cc2.left, cc1rb, cc2lb, results,
           accuracy, totalIterations)) {
         return false;
       }
-      if (Utils.pairiteration(cc1.right, cc2.right, cc1rb, cc2rb, results,
+      if (!Utils.pairiteration(cc1.right, cc2.right, cc1rb, cc2rb, results,
           accuracy, totalIterations)) {
         return false;
       }
@@ -427,11 +425,11 @@ class Utils {
       final cc1 = c1.splitAt(0.5);
       final cc1lb = cc1.left.curve.boundingBox;
       final cc1rb = cc1.right.curve.boundingBox;
-      if (Utils.pairiteration(
+      if (!Utils.pairiteration(
           cc1.left, c2, cc1lb, c2b, results, accuracy, totalIterations)) {
         return false;
       }
-      if (Utils.pairiteration(
+      if (!Utils.pairiteration(
           cc1.right, c2, cc1rb, c2b, results, accuracy, totalIterations)) {
         return false;
       }
@@ -439,11 +437,11 @@ class Utils {
       final cc2 = c2.splitAt(0.5);
       final cc2lb = cc2.left.curve.boundingBox;
       final cc2rb = cc2.right.curve.boundingBox;
-      if (Utils.pairiteration(
+      if (!Utils.pairiteration(
           c1, cc2.left, c1b, cc2lb, results, accuracy, totalIterations)) {
         return false;
       }
-      if (Utils.pairiteration(
+      if (!Utils.pairiteration(
           c1, cc2.right, c1b, cc2rb, results, accuracy, totalIterations)) {
         return false;
       }

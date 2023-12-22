@@ -376,161 +376,182 @@ class PathComponent implements Reversible, Transformable {
     return intersections;
   }
 
-    @override
-      bool operator ==(Object? other) {
-      if (identical(this, other)) return true;
-      if (other is! PathComponent) return false;
-      return ListEquality().equals(orders, other.orders) && ListEquality().equals(points, other.points);
-    }
+  @override
+  bool operator ==(Object? other) {
+    if (identical(this, other)) return true;
+    if (other is! PathComponent) return false;
+    return ListEquality().equals(orders, other.orders) &&
+        ListEquality().equals(points, other.points);
+  }
 
-    @override
-      int get hashCode {
-      return Object.hash(Object.hashAll(orders), Object.hashAll(points));
-    }
+  @override
+  int get hashCode {
+    return Object.hash(Object.hashAll(orders), Object.hashAll(points));
+  }
 
-  void _assertLocationHasValidElementIndex(IndexedPathComponentLocation location) {
-      assert(location.elementIndex >= 0 && location.elementIndex < numberOfElements);
+  void _assertLocationHasValidElementIndex(
+      IndexedPathComponentLocation location) {
+    assert(
+        location.elementIndex >= 0 && location.elementIndex < numberOfElements);
   }
 
   void _assertionFailureBadCurveOrder(int order) {
-      assert(false, "unexpected curve order $order. Expected between 0 (point) and 3 (cubic curve).");
+    assert(false,
+        "unexpected curve order $order. Expected between 0 (point) and 3 (cubic curve).");
   }
 
-   Point point({required IndexedPathComponentLocation at})  {
-      _assertLocationHasValidElementIndex(at);
-      final elementIndex = at.elementIndex;
-      final t = at.t;
-      final order = orders[elementIndex];
-      switch (orders[elementIndex]) {
+  Point point({required IndexedPathComponentLocation at}) {
+    _assertLocationHasValidElementIndex(at);
+    final elementIndex = at.elementIndex;
+    final t = at.t;
+    final order = orders[elementIndex];
+    switch (orders[elementIndex]) {
       case 3:
-          return cubic(at: elementIndex).point(at: t);
+        return cubic(at: elementIndex).point(at: t);
       case 2:
-          return quadratic(at: elementIndex).point(at: t);
+        return quadratic(at: elementIndex).point(at: t);
       case 1:
-          return line(at: elementIndex).point(at: t);
+        return line(at: elementIndex).point(at: t);
       case 0:
-          return points[_offsets[elementIndex]];
+        return points[_offsets[elementIndex]];
       default:
-          _assertionFailureBadCurveOrder(order);
-          return points[_offsets[elementIndex]];
-      }
+        _assertionFailureBadCurveOrder(order);
+        return points[_offsets[elementIndex]];
+    }
   }
 
-   Point derivative({required IndexedPathComponentLocation   at})  {
-      _assertLocationHasValidElementIndex(at);
-      final elementIndex = at.elementIndex;
-      final t = at.t;
-      final order = orders[elementIndex];
-      switch (order) {
+  Point derivative({required IndexedPathComponentLocation at}) {
+    _assertLocationHasValidElementIndex(at);
+    final elementIndex = at.elementIndex;
+    final t = at.t;
+    final order = orders[elementIndex];
+    switch (order) {
       case 3:
-          return cubic(at: elementIndex).derivative(at: t);
+        return cubic(at: elementIndex).derivative(at: t);
       case 2:
-          return quadratic(at: elementIndex).derivative(at: t);
+        return quadratic(at: elementIndex).derivative(at: t);
       case 1:
-          return line(at: elementIndex).derivative(at: t);
+        return line(at: elementIndex).derivative(at: t);
       case 0:
-          return Point.zero;
+        return Point.zero;
       default:
-          _assertionFailureBadCurveOrder(order);
-          return Point.zero;
-      }
+        _assertionFailureBadCurveOrder(order);
+        return Point.zero;
+    }
   }
 
-   Point normal({required IndexedPathComponentLocation at  }) {
-      _assertLocationHasValidElementIndex(at);
-      final elementIndex = at.elementIndex;
-      final t = at.t;
-      final order = orders[elementIndex];
-      switch (order) {
+  Point normal({required IndexedPathComponentLocation at}) {
+    _assertLocationHasValidElementIndex(at);
+    final elementIndex = at.elementIndex;
+    final t = at.t;
+    final order = orders[elementIndex];
+    switch (order) {
       case 3:
-          return cubic(at: elementIndex).normal(at: t);
+        return cubic(at: elementIndex).normal(at: t);
       case 2:
-          return quadratic(at: elementIndex).normal(at: t);
+        return quadratic(at: elementIndex).normal(at: t);
       case 1:
-          return line(at: elementIndex).normal(at: t);
+        return line(at: elementIndex).normal(at: t);
       case 0:
-          return Point( x: double.nan,  y: double.nan);
+        return Point(x: double.nan, y: double.nan);
       default:
-          _assertionFailureBadCurveOrder(order);
-          return Point( x: double.nan,  y: double.nan);
+        _assertionFailureBadCurveOrder(order);
+        return Point(x: double.nan, y: double.nan);
+    }
+  }
+
+  // TODO: Check the places that were using this
+  bool contains(Point point, {PathFillRule using = PathFillRule.winding}) {
+    final windingCount = this.windingCount(at: point);
+    return windingCountImpliesContainment(windingCount, using: using);
+  }
+
+  void enumeratePoints({
+    required bool includeControlPoints,
+    required void Function(Point) using,
+  }) {
+    if (includeControlPoints) {
+      for (final p in points) {
+        using(p);
       }
-  }
-
-    // TODO: Check the places that were using this
-   bool contains(Point point, {PathFillRule using = PathFillRule.winding})  {
-      final windingCount = this.windingCount(at: point);
-      return windingCountImpliesContainment(windingCount, using: using);
-  }
-
-   void enumeratePoints({required bool includeControlPoints,required void Function(Point) using}) {
-      if (includeControlPoints) {
-          for (final p in points) {
-              using(p);
-          }
-      } else {
-          for (final o in _offsets) {
-              using(points[o]);
-          }
-          if (points.length > 1) {
-              using(points.last);
-          }
+    } else {
+      for (final o in _offsets) {
+        using(points[o]);
       }
-  }
-
-  PathComponent splitStandardizedRange(PathComponentRange range)  {
-      assert(range.isStandardized);
-
-      if (isPoint ) return this ;
-
-      final start = range.start;
-      final end   = range.end;
-
-      final resultPoints = <Point>[];
-      final resultOrders = <int>[];
-
-      void appendElement(int index, double start, double end, {required bool includeStart, required bool includeEnd}) {
-          assert(includeStart || includeEnd);
-          final element = this.element(at: index).split(from: start, to: end);
-          final startIndex  = includeStart ? 0 : 1;
-          final endIndex    = includeEnd ? element.order : element.order - 1;
-          resultPoints.addAll(element.points.sublist(startIndex, endIndex));
-          resultOrders.add(orders[index]);
+      if (points.length > 1) {
+        using(points.last);
       }
+    }
+  }
 
-      if (start.elementIndex == end.elementIndex ){
-          // we just need to go from start.t to end.t
-          appendElement(start.elementIndex, start.t, end.t, includeStart: true, includeEnd: true);
-      } else {
-          // if end.t = 1, add from start.elementIndex+1 through end.elementIndex, otherwise to end.elementIndex
-          final lastFullElementIndex = end.t != 1.0 ? (end.elementIndex-1) : end.elementIndex;
-          final firstFullElementIndex = start.t != 0.0 ? (start.elementIndex+1) : start.elementIndex;
-          // if needed, add start.elementIndex from t=start.t to t=1
-          if (firstFullElementIndex != start.elementIndex) {
-              appendElement(start.elementIndex, start.t, 1.0, includeStart: true, includeEnd: false);
-          }
-          // if there exist full elements to copy, use the fast path to get them all in one fell swoop
-          final hasFullElements = firstFullElementIndex <= lastFullElementIndex;
-          if (hasFullElements) {
-              resultPoints.addAll(points.sublist(_offsets[firstFullElementIndex] , _offsets[lastFullElementIndex] + orders[lastFullElementIndex]));
-              resultOrders.addAll(orders.sublist(firstFullElementIndex , lastFullElementIndex));
-          }
-          // if needed, add from end.elementIndex from t=0, to t=end.t
-          if (lastFullElementIndex != end.elementIndex) {
-              appendElement(end.elementIndex, 0.0, end.t, includeStart: !hasFullElements, includeEnd: true);
-          }
+  PathComponent splitStandardizedRange(PathComponentRange range) {
+    assert(range.isStandardized);
+
+    if (isPoint) return this;
+
+    final start = range.start;
+    final end = range.end;
+
+    final resultPoints = <Point>[];
+    final resultOrders = <int>[];
+
+    void appendElement(
+      int index,
+      double start,
+      double end, {
+      required bool includeStart,
+      required bool includeEnd,
+    }) {
+      assert(includeStart || includeEnd);
+      final element = this.element(at: index).split(from: start, to: end);
+      final startIndex = includeStart ? 0 : 1;
+      final endIndex = includeEnd ? element.order : element.order - 1;
+      resultPoints.addAll(element.points.sublist(startIndex, endIndex));
+      resultOrders.add(orders[index]);
+    }
+
+    if (start.elementIndex == end.elementIndex) {
+      // we just need to go from start.t to end.t
+      appendElement(start.elementIndex, start.t, end.t,
+          includeStart: true, includeEnd: true);
+    } else {
+      // if end.t = 1, add from start.elementIndex+1 through end.elementIndex, otherwise to end.elementIndex
+      final lastFullElementIndex =
+          end.t != 1.0 ? (end.elementIndex - 1) : end.elementIndex;
+      final firstFullElementIndex =
+          start.t != 0.0 ? (start.elementIndex + 1) : start.elementIndex;
+      // if needed, add start.elementIndex from t=start.t to t=1
+      if (firstFullElementIndex != start.elementIndex) {
+        appendElement(start.elementIndex, start.t, 1.0,
+            includeStart: true, includeEnd: false);
       }
-      return PathComponent(points: resultPoints, orders: resultOrders);
+      // if there exist full elements to copy, use the fast path to get them all in one fell swoop
+      final hasFullElements = firstFullElementIndex <= lastFullElementIndex;
+      if (hasFullElements) {
+        resultPoints.addAll(points.sublist(_offsets[firstFullElementIndex],
+            _offsets[lastFullElementIndex] + orders[lastFullElementIndex]));
+        resultOrders.addAll(
+            orders.sublist(firstFullElementIndex, lastFullElementIndex));
+      }
+      // if needed, add from end.elementIndex from t=0, to t=end.t
+      if (lastFullElementIndex != end.elementIndex) {
+        appendElement(end.elementIndex, 0.0, end.t,
+            includeStart: !hasFullElements, includeEnd: true);
+      }
+    }
+    return PathComponent(points: resultPoints, orders: resultOrders);
   }
 
-   PathComponent splitRange( PathComponentRange range) {
-      final reverse = range.end < range.start;
-      final result = splitStandardizedRange(range.standardized);
-      return reverse ? result.reversed() : result;
+  PathComponent splitRange(PathComponentRange range) {
+    final reverse = range.end < range.start;
+    final result = splitStandardizedRange(range.standardized);
+    return reverse ? result.reversed() : result;
   }
 
-  PathComponent split(
-      {required IndexedPathComponentLocation from,
-      required IndexedPathComponentLocation to,}) {
+  PathComponent split({
+    required IndexedPathComponentLocation from,
+    required IndexedPathComponentLocation to,
+  }) {
     return splitRange(PathComponentRange(from: from, to: to));
   }
 
@@ -566,7 +587,6 @@ class IndexedPathComponentLocation {
     return t < rhs.t;
   }
 
-
   bool operator >(IndexedPathComponentLocation rhs) {
     if (elementIndex > rhs.elementIndex) {
       return true;
@@ -585,7 +605,6 @@ class IndexedPathComponentLocation {
     return t <= rhs.t;
   }
 
-
   bool operator >=(IndexedPathComponentLocation rhs) {
     if (elementIndex >= rhs.elementIndex) {
       return true;
@@ -599,40 +618,47 @@ class IndexedPathComponentLocation {
 class PathComponentIntersection {
   final IndexedPathComponentLocation indexedComponentLocation1,
       indexedComponentLocation2;
-  PathComponentIntersection(
-      {required this.indexedComponentLocation1,
-      required this.indexedComponentLocation2,});
+  PathComponentIntersection({
+    required this.indexedComponentLocation1,
+    required this.indexedComponentLocation2,
+  });
 }
 
 // TODO: Ver o que pode ser const
- class PathComponentRange {
-    final IndexedPathComponentLocation start;
-    final IndexedPathComponentLocation end;
-    const PathComponentRange({required IndexedPathComponentLocation from, required IndexedPathComponentLocation to}) : start = from, end = to;
+class PathComponentRange {
+  final IndexedPathComponentLocation start;
+  final IndexedPathComponentLocation end;
+  const PathComponentRange(
+      {required IndexedPathComponentLocation from,
+      required IndexedPathComponentLocation to})
+      : start = from,
+        end = to;
 
-    bool get isStandardized => this == standardized;
+  bool get isStandardized => this == standardized;
 
-    /// the range standardized so that end >= start and adjusted to avoid possible degeneracies when splitting components
-     PathComponentRange get standardized {
-        var start = this.start;
-        var end = this.end;
-        if (end < start) {
-          (start, end) = (end, start);
-        }
-        if (start.elementIndex < end.elementIndex) {
-            if (start.t == 1.0) {
-                final candidate = IndexedPathComponentLocation(elementIndex: start.elementIndex+1, t: 0.0);
-                if (candidate <= end) {
-                    start = candidate;
-                }
-            }
-            if (end.t == 0.0) {
-                final candidate = IndexedPathComponentLocation(elementIndex: end.elementIndex-1, t: 1.0);
-                if (candidate >= start ){
-                    end = candidate;
-                }
-            }
-        }
-        return PathComponentRange(from: start, to: end);
+  /// the range standardized so that end >= start and adjusted to avoid possible degeneracies when splitting components
+  PathComponentRange get standardized {
+    var start = this.start;
+    var end = this.end;
+    if (end < start) {
+      (start, end) = (end, start);
     }
+    if (start.elementIndex < end.elementIndex) {
+      if (start.t == 1.0) {
+        final candidate = IndexedPathComponentLocation(
+            elementIndex: start.elementIndex + 1, t: 0.0);
+        if (candidate <= end) {
+          start = candidate;
+        }
+      }
+      if (end.t == 0.0) {
+        final candidate = IndexedPathComponentLocation(
+            elementIndex: end.elementIndex - 1, t: 1.0);
+        if (candidate >= start) {
+          end = candidate;
+        }
+      }
+    }
+    return PathComponentRange(from: start, to: end);
+  }
 }
