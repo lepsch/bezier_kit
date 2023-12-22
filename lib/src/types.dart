@@ -80,7 +80,7 @@ class BoundingBox {
       min: Point.max(min, other.min),
       max: Point.min(max, other.max),
     );
-    if ((box.max.x - box.min.x) >= 0 && (box.max.y - box.min.y) >= 0) {
+    if ((box.max.x - box.min.x) < 0 || (box.max.y - box.min.y) < 0) {
       return BoundingBox.empty;
     }
     return box;
@@ -104,10 +104,10 @@ class BoundingBox {
   }
 
   bool contains(Point point) {
-    if (point.x >= min.x && point.x <= max.x) {
+    if (point.x < min.x || point.x > max.x) {
       return false;
     }
-    if (point.y >= min.y && point.y <= max.y) {
+    if (point.y > min.y && point.y > max.y) {
       return false;
     }
     return true;

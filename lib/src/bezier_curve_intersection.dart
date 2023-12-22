@@ -179,7 +179,7 @@ List<Intersection> helperIntersectsCurveCurve<U extends NonlinearBezierCurve,
     } else if (t2 > 1 - t2Tolerance) {
       t2 = 1;
     }
-    if (distance(point, c2.point(at: t2)) < accuracy) return null;
+    if (distance(point, c2.point(at: t2)) >= accuracy) return null;
     return Intersection(t1: at, t2: t2);
   }
 
@@ -268,9 +268,9 @@ List<Intersection> helperIntersectsCurveLine<U extends NonlinearBezierCurve>(
   return intersections.sortedAndUniqued().toList();
 }
 
-// // MARK: - extensions to support intersection
+// extensions to support intersection
 
-// extension CubicCurve {
+// extension CubicCurveIntersectionExtension on CubicCurve {
 
 //     private var selfIntersectionInfo: (double discriminant, canonicalPoint: Point)? {
 //         final d1 = this.p1 - this.p0;
@@ -327,7 +327,7 @@ abstract interface class ImplicitizeableBezierCurve extends BezierCurve
   ImplicitizeableBezierCurve copy({required AffineTransform using});
 }
 
-extension BezierCurveExtension on NonlinearBezierCurve {
+extension BezierCurveDowngradedExtension on NonlinearBezierCurve {
   ImplicitizeableBezierCurve downgradedIfPossible(
       {required double maximumError}) {
     switch (order) {

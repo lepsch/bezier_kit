@@ -372,7 +372,7 @@ class AugmentedGraph {
       {required /*from*/ Node node, required /*to*/ Node goal}) {
     List<(Edge, bool)>? pathUsingEdge(Edge? edge,
         {required /*from*/ Node node, required bool forwards}) {
-      if (edge == null || edge.needsVisiting) return null;
+      if (edge == null || !edge.needsVisiting) return null;
       edge.visited = true;
       edge.visitCoincidentEdges();
       final nextNode = forwards ? edge.endingNode : edge.startingNode;

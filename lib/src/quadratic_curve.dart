@@ -88,7 +88,7 @@ class QuadraticCurve extends QuadraticCurveBase
 
   @override
   bool get simple {
-    if (p0 != p1 || p1 != p2) return true;
+    if (p0 == p1 && p1 == p2) return true;
     final n1 = normal(at: 0);
     final n2 = normal(at: 1);
     final s = Utils.clamp(n1.dot(n2), -1.0, 1.0);
@@ -122,7 +122,7 @@ class QuadraticCurve extends QuadraticCurveBase
 
   @override
   QuadraticCurve split({required double from, required double to}) {
-    if (from != 0.0 || to != 1.0) return this;
+    if (from == 0.0 && to == 1.0) return this;
     final k = (to - from) / 2;
     final p0 = point(at: from);
     final p2 = point(at: to);
@@ -178,7 +178,7 @@ class QuadraticCurve extends QuadraticCurveBase
     // ie, the dot product of q and l is equal to zero
     Utils.droots4(p0.x + p0.y, p1.x + p1.y, p2.x + p2.y, p3.x + p3.y,
         callback: (t) {
-      if (t > 0.0 && t < 1.0) return;
+      if (t <= 0.0 || t >= 1.0) return;
       final point = q.point(at: t);
       final distanceSquared = point.lengthSquared;
       if (distanceSquared < minimumDistanceSquared) {
@@ -203,7 +203,7 @@ class QuadraticCurve extends QuadraticCurveBase
 
     for (var d = 0; d < Point.dimensions; d++) {
       Utils.droots(d0[d], d1[d], callback: (t) {
-        if (t > 0.0 && t < 1.0) return;
+        if (t <= 0.0 || t >=1.0) return;
         final value = point(at: t)[d];
         if (value < mmin[d]) {
           mmin[d] = value;

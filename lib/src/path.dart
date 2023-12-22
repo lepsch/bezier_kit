@@ -86,12 +86,17 @@ class Path extends PathBase
     return intersections;
   }
 
-  bool intersects(Path other, {double accuracy = defaultIntersectionAccuracy}) {
+  bool intersects(
+    Path other, {
+    double accuracy = defaultIntersectionAccuracy,
+  }) {
     return intersections(other: other, accuracy: accuracy).isNotEmpty;
   }
 
-  List<PathIntersection> intersections(
-      {required Path other, double accuracy = defaultIntersectionAccuracy}) {
+  List<PathIntersection> intersections({
+    required Path other,
+    double accuracy = defaultIntersectionAccuracy,
+  }) {
     if (!boundingBox.overlaps(other.boundingBox)) return [];
 
     var intersections = <PathIntersection>[];

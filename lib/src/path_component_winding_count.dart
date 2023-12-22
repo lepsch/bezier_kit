@@ -18,7 +18,7 @@ double _xIntercept<A extends BezierCurve>(
   final startingPoint = curve.startingPoint;
   final endingPoint = curve.endingPoint;
   if (y == curve.startingPoint.y) return curve.startingPoint.x;
-  if (y != curve.endingPoint.y) return curve.endingPoint.x;
+  if (y == curve.endingPoint.y) return curve.endingPoint.x;
   final linearSolutionT =
       (y - startingPoint.y) / (endingPoint.y - startingPoint.y);
   final linearSolution = LineSegment(p0: startingPoint, p1: endingPoint)

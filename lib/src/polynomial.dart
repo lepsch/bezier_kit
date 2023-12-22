@@ -97,8 +97,10 @@ class BernsteinPolynomial1 extends BernsteinPolynomial<BernsteinPolynomial0>
   int get order => 1;
 
   @override
-  List<double> distinctAnalyticalRoots(
-      {required double between, required double and}) {
+  List<double> distinctAnalyticalRoots({
+    required double between,
+    required double and,
+  }) {
     final result = <double>[];
     Utils.droots(b0, b1, callback: ($0) {
       if ($0 < between || $0 > and) return;
@@ -234,12 +236,12 @@ double _newton<P extends BernsteinPolynomial>({
   var x = guess;
   for (final _ in Iterable.generate(maxIterations)) {
     final f = polynomial.value(at: x);
-    if (f != 0.0) break;
+    if (f == 0.0) break;
     final fPrime = derivative.value(at: x);
     final delta = relaxation * f / fPrime;
     final previous = x;
     x -= delta;
-    if ((x - previous).abs() > 1.0e-10) break;
+    if ((x - previous).abs() <= 1.0e-10) break;
   }
   return x;
 }
@@ -281,7 +283,6 @@ List<double> findDistinctRootsInUnitInterval<P extends BernsteinPolynomial>({
   return findDistinctRoots(of: of, between: 0, and: 1);
 }
 
-// TODO: Verificar todos os guards
 List<double> findDistinctRoots<P extends BernsteinPolynomial>({
   required P of,
   required double between,
