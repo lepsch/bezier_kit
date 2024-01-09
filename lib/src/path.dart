@@ -7,9 +7,11 @@
 //
 
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:bezier_kit/src/affine_transform.dart';
 import 'package:bezier_kit/src/bezier_curve.dart';
+import 'package:bezier_kit/src/mutable_path.dart';
 import 'package:bezier_kit/src/path_component.dart';
 import 'package:bezier_kit/src/path_component_winding_count.dart';
 import 'package:bezier_kit/src/path_data.dart';
@@ -22,7 +24,7 @@ import 'package:collection/collection.dart';
 enum PathFillRule { winding, evenOdd }
 
 abstract interface class PathBase {
-  abstract List<PathComponent> components;
+  abstract final List<PathComponent> components;
 }
 
 class Path extends PathBase
@@ -38,26 +40,35 @@ class Path extends PathBase
   BoundingBox get boundingBoxOfPath => _boundingBoxOfPath;
 
   BoundingBox get _boundingBox {
-    return components.fold(BoundingBox.empty,
-        ($0, $1) => BoundingBox(first: $0, second: $1.boundingBox));
+    return _lazyBoundingBox ??
+        (_lazyBoundingBox = components.fold<BoundingBox>(
+            BoundingBox.empty,
+            ($0, $1) =>
+                BoundingBox.fromBox(first: $0, second: $1.boundingBox)));
   }
+
+  BoundingBox? _lazyBoundingBox;
 
   BoundingBox get _boundingBoxOfPath {
-    return components.fold(BoundingBox.empty,
-        ($0, $1) => BoundingBox(first: $0, second: $1.boundingBoxOfPath));
+    return _lazyBoundingBoxOfPath ??
+        (_lazyBoundingBoxOfPath = components.fold<BoundingBox>(
+            BoundingBox.empty,
+            ($0, $1) =>
+                BoundingBox.fromBox(first: $0, second: $1.boundingBoxOfPath)));
   }
 
-  // int? _hash;
+  BoundingBox? _lazyBoundingBoxOfPath;
 
   @override
-  List<PathComponent> components;
+  final List<PathComponent> components;
 
   bool selfIntersects({double accuracy = defaultIntersectionAccuracy}) {
     return selfIntersections(accuracy: accuracy).isNotEmpty;
   }
 
-  List<PathIntersection> selfIntersections(
-      {double accuracy = defaultIntersectionAccuracy}) {
+  List<PathIntersection> selfIntersections({
+    double accuracy = defaultIntersectionAccuracy,
+  }) {
     var intersections = <PathIntersection>[];
     for (var i = 0; i < components.length; i++) {
       for (var j = i; j < components.length; j++) {
@@ -120,12 +131,23 @@ class Path extends PathBase
     return intersections;
   }
 
-  Path({this.components = const []});
+  Path({List<PathComponent>? components, Rectangle? ellipseIn})
+      : components = components ?? [] {
+    if (ellipseIn != null) {
+      this.components.addAll(MutablePath(ellipseIn: ellipseIn).components);
+    }
+  }
 
   Path.fromCurve(BezierCurve curve)
-      : this(components: [PathComponent.fromCurve(curve)]);
+      : this(components: [PathComponent(curve: curve)]);
 
   factory Path.fromRect(Rectangle rect) {
+    return Path()..addRect(rect);
+  }
+
+  static Path? Function(Uint8List data) fromData = PathDataMixin.fromData;
+
+  void addRect(Rectangle rect) {
     final points = [
       rect.origin,
       Point(x: rect.origin.x + rect.width, y: rect.origin.y),
@@ -133,11 +155,10 @@ class Path extends PathBase
       Point(x: rect.origin.x, y: rect.origin.y + rect.height),
       rect.origin,
     ];
-    final component = PathComponent(points: points, orders: List.filled(4, 1));
-    return Path(components: [component]);
+    final component =
+        PathComponent.raw(points: points, orders: List.filled(4, 1));
+    components.add(component);
   }
-
-  static const supportsSecureCoding = true;
 
   @override
   bool operator ==(Object? other) {
@@ -260,7 +281,7 @@ class IndexedPathLocation {
   final int componentIndex;
   final int elementIndex;
   final double t;
-  IndexedPathLocation({
+  const IndexedPathLocation({
     required this.componentIndex,
     required this.elementIndex,
     required this.t,
@@ -287,7 +308,7 @@ class IndexedPathLocation {
   }
 
   @override
-  int get hashCode => Object.hashAll([componentIndex, elementIndex, t]);
+  int get hashCode => Object.hash(componentIndex, elementIndex, t);
 
   bool operator <(IndexedPathLocation rhs) {
     if (componentIndex < rhs.componentIndex) {
@@ -314,7 +335,7 @@ class IndexedPathLocation {
     } else if (elementIndex < rhs.elementIndex) {
       return false;
     }
-    return t < rhs.t;
+    return t > rhs.t;
   }
 
   IndexedPathComponentLocation get locationInComponent {
@@ -323,9 +344,11 @@ class IndexedPathLocation {
 }
 
 class PathIntersection {
-  IndexedPathLocation indexedPathLocation1, indexedPathLocation2;
-  PathIntersection.fromPaths(
-      {required this.indexedPathLocation1, required this.indexedPathLocation2});
+  final IndexedPathLocation indexedPathLocation1, indexedPathLocation2;
+  const PathIntersection({
+    required this.indexedPathLocation1,
+    required this.indexedPathLocation2,
+  });
 
   PathIntersection._({
     required PathComponentIntersection componentIntersection,
@@ -339,4 +362,15 @@ class PathIntersection {
             componentIndex: componentIndex2,
             locationInComponent:
                 componentIntersection.indexedComponentLocation2);
+
+  @override
+  bool operator ==(Object? other) {
+    if (identical(this, other)) return true;
+    if (other is! PathIntersection) return false;
+    return indexedPathLocation1 == other.indexedPathLocation1 &&
+        indexedPathLocation2 == other.indexedPathLocation2;
+  }
+
+  @override
+  int get hashCode => Object.hash(indexedPathLocation1, indexedPathLocation2);
 }

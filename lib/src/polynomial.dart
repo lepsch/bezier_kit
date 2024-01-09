@@ -33,6 +33,21 @@ abstract class BernsteinPolynomial<NextLowerOrderPolynomial> {
     final order = this.order.toDouble();
     return difference(a1: -order, a2: order);
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial) {
+      return order == other.order &&
+          ListEquality().equals(coefficients, other.coefficients);
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hashAll([order, ...coefficients]);
+  }
 }
 
 abstract interface class AnalyticalRoots {
@@ -52,9 +67,7 @@ class BernsteinPolynomial0 extends BernsteinPolynomial<BernsteinPolynomial>
   List<double> get coefficients => [b0];
 
   @override
-  double value({required double at}) {
-    return b0;
-  }
+  double value({required double at}) => b0;
 
   @override
   int get order => 0;
@@ -74,6 +87,18 @@ class BernsteinPolynomial0 extends BernsteinPolynomial<BernsteinPolynomial>
   }) {
     return [];
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial0) {
+      return b0 == other.b0 && super == other;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(b0, super.hashCode);
 }
 
 class BernsteinPolynomial1 extends BernsteinPolynomial<BernsteinPolynomial0>
@@ -108,14 +133,29 @@ class BernsteinPolynomial1 extends BernsteinPolynomial<BernsteinPolynomial0>
     });
     return result;
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial1) {
+      return b0 == other.b0 && b1 == other.b1 && super == other;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(b0, b1, super.hashCode);
 }
 
 class BernsteinPolynomial2 extends BernsteinPolynomial<BernsteinPolynomial1>
     implements AnalyticalRoots {
   final double b0, b1, b2;
 
-  const BernsteinPolynomial2(
-      {required this.b0, required this.b1, required this.b2});
+  const BernsteinPolynomial2({
+    required this.b0,
+    required this.b1,
+    required this.b2,
+  });
 
   @override
   List<double> get coefficients => [b0, b1, b2];
@@ -138,6 +178,21 @@ class BernsteinPolynomial2 extends BernsteinPolynomial<BernsteinPolynomial1>
     });
     return result;
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial2) {
+      return b0 == other.b0 &&
+          b1 == other.b1 &&
+          b2 == other.b2 &&
+          super == other;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(b0, b1, b2, super.hashCode);
 }
 
 class BernsteinPolynomial3 extends BernsteinPolynomial<BernsteinPolynomial2>
@@ -152,7 +207,10 @@ class BernsteinPolynomial3 extends BernsteinPolynomial<BernsteinPolynomial2>
   @override
   BernsteinPolynomial2 difference({required double a1, required double a2}) {
     return BernsteinPolynomial2(
-        b0: a1 * b0 + a2 * b1, b1: a1 * b1 + a2 * b2, b2: a1 * b2 + a2 * b3);
+      b0: a1 * b0 + a2 * b1,
+      b1: a1 * b1 + a2 * b2,
+      b2: a1 * b2 + a2 * b3,
+    );
   }
 
   @override
@@ -168,6 +226,22 @@ class BernsteinPolynomial3 extends BernsteinPolynomial<BernsteinPolynomial2>
     });
     return result;
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial3) {
+      return b0 == other.b0 &&
+          b1 == other.b1 &&
+          b2 == other.b2 &&
+          b3 == other.b3 &&
+          super == other;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(b0, b1, b2, b3, super.hashCode);
 }
 
 class BernsteinPolynomial4 extends BernsteinPolynomial<BernsteinPolynomial3> {
@@ -195,6 +269,23 @@ class BernsteinPolynomial4 extends BernsteinPolynomial<BernsteinPolynomial3> {
 
   @override
   int get order => 4;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial4) {
+      return b0 == other.b0 &&
+          b1 == other.b1 &&
+          b2 == other.b2 &&
+          b3 == other.b3 &&
+          b4 == other.b4 &&
+          super == other;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(b0, b1, b2, b3, b4, super.hashCode);
 }
 
 class BernsteinPolynomial5 extends BernsteinPolynomial<BernsteinPolynomial4> {
@@ -224,6 +315,24 @@ class BernsteinPolynomial5 extends BernsteinPolynomial<BernsteinPolynomial4> {
 
   @override
   int get order => 5;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is BernsteinPolynomial5) {
+      return b0 == other.b0 &&
+          b1 == other.b1 &&
+          b2 == other.b2 &&
+          b3 == other.b3 &&
+          b4 == other.b4 &&
+          b5 == other.b5 &&
+          super == other;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(b0, b1, b2, b3, b4, b5, super.hashCode);
 }
 
 double _newton<P extends BernsteinPolynomial>({
@@ -298,8 +407,8 @@ List<double> findDistinctRoots<P extends BernsteinPolynomial>({
       findDistinctRoots(of: derivative, between: between, and: and);
   final List<double> intervals = [between] + criticalPoints + [and];
   double? lastFoundRoot;
-  final roots = Iterable<int>.generate(intervals.length - 1)
-      .map((int i) {
+  return Iterable<int>.generate(intervals.length - 1)
+      .map((i) {
         final between = intervals[i];
         final and = intervals[i + 1];
         final fStart = of.value(at: between);
@@ -341,5 +450,4 @@ List<double> findDistinctRoots<P extends BernsteinPolynomial>({
       })
       .whereNotNull()
       .toList();
-  return roots;
 }

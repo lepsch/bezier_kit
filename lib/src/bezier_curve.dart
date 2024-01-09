@@ -17,9 +17,11 @@ import 'package:bezier_kit/src/bezier_curve_implicitization.dart';
 import 'package:bezier_kit/src/bezier_curve_internals.dart';
 import 'package:bezier_kit/src/bezier_curve_polynomial.dart';
 import 'package:bezier_kit/src/box.dart';
+import 'package:bezier_kit/src/path_component.dart';
 import 'package:bezier_kit/src/point.dart';
 import 'package:bezier_kit/src/polynomial.dart';
 import 'package:bezier_kit/src/root_finding.dart';
+import 'package:bezier_kit/src/shape.dart';
 import 'package:bezier_kit/src/types.dart';
 import 'package:bezier_kit/src/utils.dart';
 import 'package:collection/collection.dart';
@@ -30,54 +32,73 @@ part 'cubic_curve.dart';
 part 'quadratic_curve.dart';
 
 extension BezierCurveExtension on BezierCurve {
-//     // MARK: -
+  // outlines
 
-//     // MARK: - outlines
+  PathComponent outline({required double distance}) {
+    return _internalOutline(d1: distance, d2: distance);
+  }
 
-//      func outline(distance double d1) -> PathComponent {
-//         return internalOutline(d1: d1, d2: d1)
-//     }
+  PathComponent outlineNormal(
+      {required double distanceAlongNormal,
+      required double distanceOppositeNormal}) {
+    return _internalOutline(
+        d1: distanceAlongNormal, d2: distanceOppositeNormal);
+  }
 
-//      func outline(distanceAlongNormal double d1, distanceOppositeNormal double d2) -> PathComponent {
-//         return internalOutline(d1: d1, d2: d2)
-//     }
+  PathComponent _internalOutline({required double d1, required double d2}) {
+    final reduced = reduce();
+    final length = reduced.length;
+    var forwardCurves =
+        reduced.map(($0) => $0.curve.scale(distance: d1)).nonNulls.toList();
+    var backCurves =
+        reduced.map(($0) => $0.curve.scale(distance: -d2)).nonNulls.toList();
+    _ensureContinuous(forwardCurves);
+    _ensureContinuous(backCurves);
+    // reverse the "return" outline
+    backCurves = backCurves.reversed.map(($0) => $0.reversed()).toList();
+    // form the endcaps as lines
+    final forwardStart = forwardCurves[0].points[0];
+    final forwardEnd = forwardCurves[length - 1]
+        .points[forwardCurves[length - 1].points.length - 1];
+    final backStart =
+        backCurves[length - 1].points[backCurves[length - 1].points.length - 1];
+    final backEnd = backCurves[0].points[0];
+    final lineStart = LineSegment(p0: backStart, p1: forwardStart);
+    final lineEnd = LineSegment(p0: forwardEnd, p1: backEnd);
+    final segments =
+        <BezierCurve>[lineStart] + forwardCurves + [lineEnd] + backCurves;
+    return PathComponent(curves: segments);
+  }
 
-//     private func internalOutline(double d1, double d2) -> PathComponent {
-//         final reduced = this.reduce();
-//         final length = reduced.length;
-//         var forwardCurves: List<BezierCurve> = reduced.compactMap { $0.curve.scale(distance: d1) }
-//         var backCurves: List<BezierCurve> = reduced.compactMap { $0.curve.scale(distance: -d2) }
-//         _ensureContinuous(&forwardCurves)
-//         _ensureContinuous(&backCurves)
-//         // reverse the "return" outline
-//         backCurves = backCurves.reversed().map { $0.reversed() }
-//         // form the endcaps as lines
-//         final forwardStart = forwardCurves[0].points[0];
-//         final forwardEnd = forwardCurves[length-1].points[forwardCurves[length-1].points.length-1];
-//         final backStart = backCurves[length-1].points[backCurves[length-1].points.length-1];
-//         final backEnd = backCurves[0].points[0];
-//         final lineStart = LineSegment(p0: backStart, p1: forwardStart);
-//         final lineEnd = LineSegment(p0: forwardEnd, p1: backEnd);
-//         final segments = [lineStart] + forwardCurves + [lineEnd] + backCurves;
-//         return PathComponent(curves: segments)
-//     }
+  // shapes
 
-//     // MARK: shapes
+  List<Shape> outlineShapes({
+    required double distance,
+    double accuracy = defaultIntersectionAccuracy,
+  }) {
+    return outlineShapesNormal(
+        distanceAlongNormal: distance,
+        distanceOppositeNormal: distance,
+        accuracy: accuracy);
+  }
 
-//      func outlineShapes(distance double d1, accuracy: double = defaultIntersectionAccuracy) -> [Shape] {
-//         return this.outlineShapes(distanceAlongNormal: d1, distanceOppositeNormal: d1, accuracy: accuracy)
-//     }
-
-//      func outlineShapes(distanceAlongNormal double d1, distanceOppositeNormal double d2, accuracy: double = defaultIntersectionAccuracy) -> [Shape] {
-//         final outline = this.outline(distanceAlongNormal: d1, distanceOppositeNormal: d2);
-//         var shapes: [Shape] = []
-//         final len = outline.numberOfElements;
-//         for i in 1..<len/2 {
-//             final shape = Shape(outline.element(at: i), outline.element(at: len-i), i > 1, i < len/2-1);
-//             shapes.add(shape)
-//         }
-//         return shapes
-//     }
+  List<Shape> outlineShapesNormal({
+    required double distanceAlongNormal,
+    required double distanceOppositeNormal,
+    double accuracy = defaultIntersectionAccuracy,
+  }) {
+    final outline = outlineNormal(
+        distanceAlongNormal: distanceAlongNormal,
+        distanceOppositeNormal: distanceOppositeNormal);
+    final shapes = <Shape>[];
+    final len = outline.numberOfElements;
+    for (var i = 1; i < len / 2; i++) {
+      final shape = Shape(outline.element(at: i), outline.element(at: len - i),
+          i > 1, i < len / 2 - 1);
+      shapes.add(shape);
+    }
+    return shapes;
+  }
 }
 
 const defaultIntersectionAccuracy = 0.5;
@@ -128,7 +149,10 @@ sealed class BezierCurve
     BezierCurve curve, {
     double? accuracy,
   });
-  
+
+  @override
+  BezierCurve reversed();
+
   @override
   BezierCurve copy({required AffineTransform using});
 
@@ -243,7 +267,6 @@ sealed class BezierCurve
 
     // second pass: further reduce these segments to simple segments
     final pass2 = <Subcurve<BezierCurve>>[];
-    // pass2.reserveCapacity(pass1.length)
     for (var p1 in pass1) {
       final adjustedStep = step / (p1.t2 - p1.t1);
       var t1 = 0.0;
@@ -275,7 +298,6 @@ sealed class BezierCurve
     final order = this.order;
     assert(order < 4, "only works with cubic or lower order");
     if (order <= 0) return this; // points cannot be scaled
-    final points = this.points;
 
     final n1 = normal(at: 0);
     final n2 = normal(at: 1);
@@ -309,7 +331,7 @@ sealed class BezierCurve
     }
 
     final scaledPoints =
-        Iterable<int>.generate(this.points.length).map(scaledPoint).toList();
+        Iterable<int>.generate(points.length).map(scaledPoint).toList();
     return copyWith(points: scaledPoints);
   }
 
@@ -322,7 +344,7 @@ mixin FlatnessMixin {
   double get flatness => sqrt(flatnessSquared);
 }
 
-sealed class NonlinearBezierCurve extends BezierCurve
+sealed class NonlinearBezierCurve extends ImplicitizeableBezierCurve
     implements ComponentPolynomials, Implicitizeable {
   /// default implementation of `extrema` by finding roots of component polynomials
   @override

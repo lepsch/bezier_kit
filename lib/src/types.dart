@@ -12,9 +12,9 @@ import 'package:bezier_kit/src/point.dart';
 import 'package:bezier_kit/src/utils.dart';
 
 class Intersection implements Comparable<Intersection> {
-  double t1;
-  double t2;
-  Intersection({required this.t1, required this.t2});
+  final double t1;
+  final double t2;
+  const Intersection({required this.t1, required this.t2});
 
   bool operator <(Intersection rhs) {
     if (t1 < rhs.t1) {
@@ -46,6 +46,16 @@ class Intersection implements Comparable<Intersection> {
       return 0;
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! Intersection) return false;
+    return t1 == other.t1 && t2 == other.t2;
+  }
+
+  @override
+  int get hashCode => Object.hash(t1, t2);
 }
 
 class Interval {
@@ -88,13 +98,16 @@ class BoundingBox {
 
   bool get isEmpty => min.x > max.x || min.y > max.y;
 
-  BoundingBox.fromPoints({required Point p1, required Point p2})
+  BoundingBox({required Point p1, required Point p2})
       : min = Point.min(p1, p2),
         max = Point.max(p1, p2);
 
-  BoundingBox({required BoundingBox first, required BoundingBox second})
+  BoundingBox.fromBox({required BoundingBox first, required BoundingBox second})
       : min = Point.min(first.min, second.min),
         max = Point.max(first.max, second.max);
+
+  math.Rectangle get rect =>
+      math.Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
 
   Point get size => Point.max(max - min, Point.zero);
 
@@ -136,5 +149,26 @@ class BoundingBox {
       return $0 + math.max(diff1 * diff1, diff2 * diff2);
     });
     return math.sqrt(distanceSquared);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! BoundingBox) return false;
+    return min == other.min && max == other.max;
+  }
+
+  @override
+  int get hashCode => Object.hash(min, max);
+}
+
+extension RectangeInsetByExtension<T extends num> on math.Rectangle<T> {
+  math.Rectangle insetBy({required T dx, required T dy}) {
+    return math.Rectangle(
+      left + dx,
+      top + dy,
+      width - dx * 2,
+      height - dy * 2,
+    );
   }
 }

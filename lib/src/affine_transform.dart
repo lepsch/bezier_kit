@@ -85,18 +85,6 @@ class AffineTransform {
     return AffineTransform(a: a, b: b, c: c, d: d, tx: tx, ty: ty);
   }
 
-  // Point transformPoint(Point point) {
-  //   return Point(
-  //       x: a * point.x + c * point.y + tx, y: b * point.x + d * point.y + ty);
-  // }
-
-  // Point transformPointInverse(Point point) {
-  //   final determinant = a * d - b * c;
-  //   return Point(
-  //       x: (d * point.x - c * point.y + c * ty - d * tx) / determinant,
-  //       y: (-b * point.x + a * point.y - a * ty + b * tx) / determinant);
-  // }
-
   @override
   bool operator ==(Object other) {
     if (other is AffineTransform) {
@@ -118,90 +106,13 @@ class AffineTransform {
     return 'AffineTransform(a: $a, b: $b, c: $c, d: $d, tx: $tx, ty: $ty)';
   }
 
-  // static AffineTransform fromList(List<double> list) {
-  //   return AffineTransform(
-  //     a: list[0],
-  //     b: list[1],
-  //     c: list[2],
-  //     d: list[3],
-  //     tx: list[4],
-  //     ty: list[5],
-  //   );
-  // }
-
   List<double> toList() {
     return [a, b, c, d, tx, ty];
   }
 }
 /*
-
-
-
-
-
-
-
-
-
-
-/* functions */
-CG_EXTERN CGAffineTransform CGAffineTransformMake (
-	CGFloat a, CGFloat b,
-	CGFloat c, CGFloat d, CGFloat tx, CGFloat ty);
-
-CG_EXTERN CGAffineTransform CGAffineTransformMakeRotation(CGFloat angle);
-
-CG_EXTERN CGAffineTransform CGAffineTransformMakeScale(CGFloat sx, CGFloat sy);
-
-CG_EXTERN CGAffineTransform CGAffineTransformMakeTranslation(CGFloat tx, CGFloat ty);
-
-/* Modifying Affine Transformations */
-CG_EXTERN CGAffineTransform CGAffineTransformTranslate(CGAffineTransform t,
-CGFloat tx, CGFloat ty);
-
-CG_EXTERN CGAffineTransform CGAffineTransformScale(CGAffineTransform t,
-  CGFloat sx, CGFloat sy);
-
-CG_EXTERN CGAffineTransform CGAffineTransformRotate(CGAffineTransform t,
-  CGFloat angle);
-
-CG_EXTERN CGAffineTransform CGAffineTransformInvert(CGAffineTransform t);
-
-CG_EXTERN CGAffineTransform CGAffineTransformConcat(CGAffineTransform t1,
-  CGAffineTransform t2);
-
-/* Applying Affine Transformations */
-
-CG_EXTERN bool CGAffineTransformEqualToTransform(CGAffineTransform t1,
-  CGAffineTransform t2);
-
-
-CG_EXTERN CGPoint CGPointApplyAffineTransform(CGPoint point,
-  CGAffineTransform t);
-
-
-CG_EXTERN CGSize CGSizeApplyAffineTransform(CGSize size, CGAffineTransform t);
-
-
-CG_EXTERN CGRect CGRectApplyAffineTransform(CGRect rect, CGAffineTransform t);
-
-/* Evaluating Affine Transforms */
-
-CG_EXTERN bool CGAffineTransformIsIdentity(CGAffineTransform t);
-
-/* inline functions */
-CG_INLINE CGAffineTransform __CGAffineTransformMake(CGFloat a, CGFloat b,
- CGFloat c, CGFloat d, CGFloat tx, CGFloat ty)
-{
-  CGAffineTransform at;
-  at.a = a; at.b = b; at.c = c; at.d = d;
-  at.tx = tx; at.ty = ty;
-  return at;
-}
-#define CGAffineTransformMake __CGAffineTransformMake
-
 CG_INLINE CGPoint
-__CGPointApplyAffineTransform(CGPoint point, CGAffineTransform t)
+__CGPointApplyAffineTransform(CGPoint point, AffineTransform t)
 {
   CGPoint p;
   p.x = (CGFloat)((double)t.a * point.x + (double)t.c * point.y + t.tx);
@@ -211,7 +122,7 @@ __CGPointApplyAffineTransform(CGPoint point, CGAffineTransform t)
 #define CGPointApplyAffineTransform __CGPointApplyAffineTransform
 
 CG_INLINE CGSize
-__CGSizeApplyAffineTransform(CGSize size, CGAffineTransform t)
+__CGSizeApplyAffineTransform(CGSize size, AffineTransform t)
 {
   CGSize s;
   s.width  = (CGFloat)((double)t.a * size.width + (double)t.c * size.height);

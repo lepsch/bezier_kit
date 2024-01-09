@@ -8,6 +8,7 @@
 
 import 'package:bezier_kit/src/bezier_curve.dart';
 import 'package:bezier_kit/src/types.dart';
+import 'package:collection/collection.dart';
 
 class ShapeIntersection {
   final BezierCurve curve1;
@@ -25,12 +26,12 @@ class ShapeIntersection {
     if (other is! ShapeIntersection) return false;
     return curve1 == other.curve1 &&
         curve2 == other.curve2 &&
-        intersections == other.intersections;
+        ListEquality().equals(intersections, other.intersections);
   }
 
   @override
   int get hashCode =>
-      Object.hash(curve1.hashCode, curve2.hashCode, intersections.hashCode);
+      Object.hashAll([curve1.hashCode, curve2.hashCode, ...intersections]);
 }
 
 class ShapeCap {
@@ -67,7 +68,7 @@ class Shape {
 
   BoundingBox get boundingBox {
     return _nonvirtualSegments().fold(BoundingBox.empty,
-        ($0, $1) => BoundingBox(first: $0, second: $1.boundingBox));
+        ($0, $1) => BoundingBox.fromBox(first: $0, second: $1.boundingBox));
   }
 
   List<BezierCurve> _nonvirtualSegments() {

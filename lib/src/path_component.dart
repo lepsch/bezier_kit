@@ -23,7 +23,7 @@ class PathComponent implements Reversible, Transformable {
   final List<Point> points;
   final List<int> orders;
 
-  PathComponent({required this.points, required this.orders})
+  PathComponent.raw({required this.points, required this.orders})
       : _offsets = PathComponent._computeOffsets(from: orders) {
     // TODO: I don't like that this constructor is exposed, but for certain performance critical things you need it
     final expectedPointsCount = orders.fold(1, (result, value) {
@@ -32,13 +32,11 @@ class PathComponent implements Reversible, Transformable {
     assert(points.length == expectedPointsCount);
   }
 
-  factory PathComponent.fromCurve(BezierCurve curve) {
-    return PathComponent.fromList(curves: [curve]);
-  }
-
-  factory PathComponent.fromList({required List<BezierCurve> curves}) {
-    assert(curves.isEmpty == false,
-        "Path components are by definition non-empty.");
+  factory PathComponent({List<BezierCurve>? curves, BezierCurve? curve}) {
+    assert(curves != null || curve != null,
+        "curves and curve cannot both be null");
+    curves ??= [curve!];
+    assert(curves.isNotEmpty, "Path components are by definition non-empty.");
 
     final orders = curves.map(($0) => $0.order).toList();
 
@@ -49,13 +47,12 @@ class PathComponent implements Reversible, Transformable {
       temp += $0.points.sublist(1);
     }
     final points = temp;
-    return PathComponent(points: points, orders: orders);
+    return PathComponent.raw(points: points, orders: orders);
   }
 
   static List<int> _computeOffsets({required List<int> from}) {
-    final offsets = <int>[];
+    final offsets = List.filled(from.length, 0);
     var sum = 0;
-    offsets[0] = 0;
     for (var i = 1; i < from.length; i++) {
       sum += from[i - 1];
       offsets[i] = sum;
@@ -78,8 +75,6 @@ class PathComponent implements Reversible, Transformable {
           element(at: at).boundingBox
       ]));
   BoundingBoxHierarchy? _lazyBvh;
-
-  // int? _hash;
 
   BoundingBox get _boundingBoxOfPath =>
       _lazyBoundingBoxOfPath ??
@@ -105,9 +100,7 @@ class PathComponent implements Reversible, Transformable {
       IndexedPathComponentLocation(elementIndex: numberOfElements - 1, t: 1.0);
 
   /// if the path component represents a single point
-  bool get isPoint {
-    return points.length == 1;
-  }
+  bool get isPoint => points.length == 1;
 
   BezierCurve element({required int at}) {
     assert(at >= 0 && at < numberOfElements);
@@ -195,7 +188,7 @@ class PathComponent implements Reversible, Transformable {
       offsetCurves[0].startingPoint = average;
       offsetCurves[offsetCurves.length - 1].endingPoint = average;
     }
-    return PathComponent.fromList(curves: offsetCurves);
+    return PathComponent(curves: offsetCurves);
   }
 
   static List<Intersection>
@@ -320,8 +313,9 @@ class PathComponent implements Reversible, Transformable {
     return true;
   }
 
-  List<PathComponentIntersection> selfIntersections(
-      {double accuracy = defaultIntersectionAccuracy}) {
+  List<PathComponentIntersection> selfIntersections({
+    double accuracy = defaultIntersectionAccuracy,
+  }) {
     final intersections = <PathComponentIntersection>[];
     final isClosed = this.isClosed;
     bvh.enumerateSelfIntersections((i1, i2) {
@@ -390,7 +384,8 @@ class PathComponent implements Reversible, Transformable {
   }
 
   void _assertLocationHasValidElementIndex(
-      IndexedPathComponentLocation location) {
+    IndexedPathComponentLocation location,
+  ) {
     assert(
         location.elementIndex >= 0 && location.elementIndex < numberOfElements);
   }
@@ -506,7 +501,7 @@ class PathComponent implements Reversible, Transformable {
       final element = this.element(at: index).split(from: start, to: end);
       final startIndex = includeStart ? 0 : 1;
       final endIndex = includeEnd ? element.order : element.order - 1;
-      resultPoints.addAll(element.points.sublist(startIndex, endIndex));
+      resultPoints.addAll(element.points.sublist(startIndex, endIndex + 1));
       resultOrders.add(orders[index]);
     }
 
@@ -529,9 +524,9 @@ class PathComponent implements Reversible, Transformable {
       final hasFullElements = firstFullElementIndex <= lastFullElementIndex;
       if (hasFullElements) {
         resultPoints.addAll(points.sublist(_offsets[firstFullElementIndex],
-            _offsets[lastFullElementIndex] + orders[lastFullElementIndex]));
+            _offsets[lastFullElementIndex] + orders[lastFullElementIndex] + 1));
         resultOrders.addAll(
-            orders.sublist(firstFullElementIndex, lastFullElementIndex));
+            orders.sublist(firstFullElementIndex, lastFullElementIndex + 1));
       }
       // if needed, add from end.elementIndex from t=0, to t=end.t
       if (lastFullElementIndex != end.elementIndex) {
@@ -539,7 +534,7 @@ class PathComponent implements Reversible, Transformable {
             includeStart: !hasFullElements, includeEnd: true);
       }
     }
-    return PathComponent(points: resultPoints, orders: resultOrders);
+    return PathComponent.raw(points: resultPoints, orders: resultOrders);
   }
 
   PathComponent splitRange(PathComponentRange range) {
@@ -557,13 +552,13 @@ class PathComponent implements Reversible, Transformable {
 
   @override
   PathComponent reversed() {
-    return PathComponent(
+    return PathComponent.raw(
         points: points.reversed.toList(), orders: orders.reversed.toList());
   }
 
   @override
   PathComponent copy({required AffineTransform using}) {
-    return PathComponent(
+    return PathComponent.raw(
         points: points.map(($0) => $0.applying(using)).toList(),
         orders: orders);
   }
@@ -613,6 +608,16 @@ class IndexedPathComponentLocation {
     }
     return t >= rhs.t;
   }
+
+  @override
+  bool operator ==(Object? other) {
+    if (identical(this, other)) return true;
+    if (other is! IndexedPathComponentLocation) return false;
+    return elementIndex == other.elementIndex && t == other.t;
+  }
+
+  @override
+  int get hashCode => Object.hash(elementIndex, t);
 }
 
 class PathComponentIntersection {
@@ -661,4 +666,14 @@ class PathComponentRange {
     }
     return PathComponentRange(from: start, to: end);
   }
+
+  @override
+  bool operator ==(Object? other) {
+    if (identical(this, other)) return true;
+    if (other is! PathComponentRange) return false;
+    return start == other.start && end == other.end;
+  }
+
+  @override
+  int get hashCode => Object.hash(start, end);
 }

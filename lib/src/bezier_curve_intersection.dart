@@ -21,7 +21,7 @@ mixin BezierCurveIntersectionMixin on BezierCurve {
     BezierCurve curve, {
     double? accuracy = defaultIntersectionAccuracy,
   }) {
-    return intersectsCurve(curve, accuracy: accuracy);
+    return intersectionsWithCurve(curve, accuracy: accuracy).isNotEmpty;
   }
 
   @override
@@ -33,8 +33,10 @@ mixin BezierCurveIntersectionMixin on BezierCurve {
 
 List<Intersection>?
     _coincidenceCheck<U extends BezierCurve, T extends BezierCurve>(
-        U curve1, T curve2,
-        {required double accuracy}) {
+  U curve1,
+  T curve2, {
+  required double accuracy,
+}) {
   double? pointIsCloseToCurve<X extends BezierCurve>(Point p, X curve) {
     final (:point, :t) = curve.project(p);
     if (distanceSquared(p, point) >= 4.0 * accuracy * accuracy) {
@@ -49,7 +51,7 @@ List<Intersection>?
   var range2End = -double.infinity;
   if (range1Start > 0 || range2Start > 0 || range2End < 1) {
     final t2 = pointIsCloseToCurve(curve1.startingPoint, curve2);
-    if (t2 != null) {
+    if (t2 != null && t2.isFinite) {
       range1Start = 0;
       range2Start = min(range2Start, t2);
       range2End = max(range2End, t2);
@@ -57,7 +59,7 @@ List<Intersection>?
   }
   if (range1End < 1 || range2Start > 0 || range2Start < 1) {
     final t2 = pointIsCloseToCurve(curve1.endingPoint, curve2);
-    if (t2 != null) {
+    if (t2 != null && t2.isFinite) {
       range1End = 1;
       range2Start = min(range2Start, t2);
       range2End = max(range2End, t2);
@@ -65,7 +67,7 @@ List<Intersection>?
   }
   if (range2Start > 0 || range1Start > 0 || range1End < 1) {
     final t1 = pointIsCloseToCurve(curve2.startingPoint, curve1);
-    if (t1 != null) {
+    if (t1 != null && t1.isFinite) {
       range2Start = 0;
       range1Start = min(range1Start, t1);
       range1End = max(range1End, t1);
@@ -73,7 +75,7 @@ List<Intersection>?
   }
   if (range2End < 1 || range1Start > 0 || range1End < 1) {
     final t1 = pointIsCloseToCurve(curve2.endingPoint, curve1);
-    if (t1 != null) {
+    if (t1 != null && t1.isFinite) {
       range2End = 1;
       range1Start = min(range1Start, t1);
       range1End = max(range1End, t1);
@@ -211,14 +213,16 @@ List<Intersection> helperIntersectsCurveCurve<U extends NonlinearBezierCurve,
 }
 
 List<Intersection> helperIntersectsCurveLine<U extends NonlinearBezierCurve>(
-    U curve, LineSegment line,
-    {bool reversed = false}) {
+  U curve,
+  LineSegment line, {
+  bool reversed = false,
+}) {
   if (!line.boundingBox.overlaps(curve.boundingBox)) return [];
 
   final coincidence = _coincidenceCheck(curve, line, accuracy: tinyValue);
   if (coincidence != null) return coincidence;
 
-  final lineDirection = (line.p1 - line.p0);
+  final lineDirection = line.p1 - line.p0;
   final lineLength = lineDirection.lengthSquared;
   if (lineLength <= 0) return [];
 
@@ -270,56 +274,57 @@ List<Intersection> helperIntersectsCurveLine<U extends NonlinearBezierCurve>(
 
 // extensions to support intersection
 
-// extension CubicCurveIntersectionExtension on CubicCurve {
+mixin CubicCurveIntersectionMixin on CubicCurveBase {
+  ({double discriminant, Point canonicalPoint})? get _selfIntersectionInfo {
+    final d1 = p1 - p0;
+    final d2 = p2 - p0;
+    // https://pomax.github.io/bezierinfo/#canonical
+    // we'll use cramer's rule to find a matrix M that maps d1 -> (1, 0) and d2 -> (0, 1)
+    // then compute the transform to canonical form as [[0, 1], [1, 1]] * M
+    final a = d1.x;
+    final c = d1.y;
+    final b = d2.x;
+    final d = d2.y;
+    final det = a * d - b * c;
+    if (det == 0) return null;
+    final d3 = p3 - p0;
+    // find the coordinates of the last point in canonical form
+    final x = (1 / det) * (-c * d3.x + a * d3.y);
+    final y = (1 / det) * ((d - c) * d3.x + (a - b) * d3.y);
+    // use the coordinates of the last point to determine if any this-intersections exist;
+    if (x >= 1) return null;
+    final xSquared = x * x;
+    final cuspEdge = -3 * xSquared + 6 * x - 12 * y + 9;
+    if (cuspEdge <= 0) return null;
+    if (x <= 0) {
+      final loopAtTZeroEdge = (-xSquared + 3 * x) / 3;
+      if (y < loopAtTZeroEdge) return null;
+    } else {
+      final loopAtTOneEdge = (sqrt(3 * (4 * x - xSquared)) - x) / 2;
+      if (y < loopAtTOneEdge) return null;
+    }
+    return (discriminant: cuspEdge, canonicalPoint: Point(x: x, y: y));
+  }
 
-//     private var selfIntersectionInfo: (double discriminant, canonicalPoint: Point)? {
-//         final d1 = this.p1 - this.p0;
-//         final d2 = this.p2 - this.p0;
-//         // https://pomax.github.io/bezierinfo/#canonical
-//         // we'll use cramer's rule to find a matrix M that maps d1 -> (1, 0) and d2 -> (0, 1)
-//         // then compute the transform to canonical form as [[0, 1], [1, 1]] * M
-//         final a = d1.x
-//         final c = d1.y
-//         final b = d2.x
-//         final d = d2.y
-//         final det = a * d - b * c
-//         guard det != 0 else { return null }
-//         final d3 = this.p3 - this.p0;
-//         // find the coordinates of the last point in canonical form
-//         final x = (1 / det) * (-c * d3.x + a * d3.y)
-//         final y = (1 / det) * ((d - c) * d3.x + (a - b) * d3.y)
-//         // use the coordinates of the last point to determine if any this-intersections exist;
-//         guard x < 1 else { return null }
-//         final xSquared = x * x
-//         final cuspEdge = -3 * xSquared + 6 * x - 12 * y + 9
-//         guard cuspEdge > 0 else { return null }
-//         if x <= 0 {
-//             final loopAtTZeroEdge = (-xSquared + 3 * x) / 3
-//             guard y >= loopAtTZeroEdge else { return null }
-//         } else {
-//             final loopAtTOneEdge = (sqrt(3 * (4 * x - xSquared)) - x) / 2
-//             guard y >= loopAtTOneEdge else { return null }
-//         }
-//         return (discriminant: cuspEdge, canonicalPoint: Point(x: x, y: y))
-//     }
+  @override
+  bool get selfIntersects {
+    return _selfIntersectionInfo != null;
+  }
 
-//      var selfIntersects: bool {
-//         return this.selfIntersectionInfo != null;
-//     }
-
-//      var selfIntersections: List<Intersection> {
-//         guard final info = this.selfIntersectionInfo else { return [] };
-//         final discriminant = info.discriminant
-//         final x = info.canonicalPoint.x
-//         final y = info.canonicalPoint.y
-//         final radical = sqrt(discriminant)
-//         final denominator = (3 - x - y)
-//         final t1 = 0.5 * (3 - x - radical) / denominator
-//         final t2 = 0.5 * (3 - x + radical) / denominator
-//         return [Intersection(t1: Utils.clamp(t1, 0, 1),
-//                              t2: Utils.clamp(t2, 0, 1))]
-//     }
-// }
+  @override
+  List<Intersection> get selfIntersections {
+    final info = _selfIntersectionInfo;
+    if (info == null) return [];
+    final discriminant = info.discriminant;
+    final x = info.canonicalPoint.x;
+    final y = info.canonicalPoint.y;
+    final radical = sqrt(discriminant);
+    final denominator = (3 - x - y);
+    final t1 = 0.5 * (3 - x - radical) / denominator;
+    final t2 = 0.5 * (3 - x + radical) / denominator;
+    return [Intersection(t1: Utils.clamp(t1, 0, 1), t2: Utils.clamp(t2, 0, 1))];
+  }
+}
 
 abstract interface class ImplicitizeableBezierCurve extends BezierCurve
     implements Implicitizeable {
@@ -335,22 +340,22 @@ extension BezierCurveDowngradedExtension on NonlinearBezierCurve {
         final cubic = (this as CubicCurve);
         final ls = cubic.downgradedToLineSegment;
         if (ls.error <= maximumError) {
-          return ls.lineSegment as ImplicitizeableBezierCurve;
+          return ls.lineSegment;
         }
         final q = cubic.downgradedToQuadratic;
         if (q.error <= maximumError) {
-          return q.quadratic as ImplicitizeableBezierCurve;
+          return q.quadratic;
         }
-        return this as ImplicitizeableBezierCurve;
+        return this;
       case 2:
         final quadratic = (this as QuadraticCurve);
         final ls = quadratic.downgradedToLineSegment;
         if (ls.error <= maximumError) {
-          return ls.lineSegment as ImplicitizeableBezierCurve;
+          return ls.lineSegment;
         }
-        return this as ImplicitizeableBezierCurve;
+        return this;
       default:
-        return this as ImplicitizeableBezierCurve;
+        return this;
     }
   }
 }
@@ -403,7 +408,7 @@ mixin LineSegmentIntersectionMixin on LineSegmentBase {
             curve as QuadraticCurve, this as LineSegment,
             reversed: true);
       case 1:
-        return intersectionsWithCurve(curve as LineSegment);
+        return intersectionsWithLine(curve as LineSegment);
       default:
         throw Exception("unsupported");
     }
@@ -411,8 +416,8 @@ mixin LineSegmentIntersectionMixin on LineSegmentBase {
 
   @override
   List<Intersection> intersectionsWithLine(
-    LineSegment line,  {
-     bool checkCoincidence = true,
+    LineSegment line, {
+    bool checkCoincidence = true,
   }) {
     if (p1 == p0 || line.p1 == line.p0) return [];
 

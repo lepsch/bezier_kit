@@ -18,7 +18,8 @@ class CubicCurve extends CubicCurveBase
         CubicCurvePolynomialMixin,
         NonlinearBezierCurveIntersectionMixin,
         BezierCurveIntersectionMixin,
-        CubicCurveImplicitizationMixin
+        CubicCurveImplicitizationMixin,
+        CubicCurveIntersectionMixin
     implements Transformable, Reversible {
   @override
   Point p0, p1, p2, p3;
@@ -41,10 +42,10 @@ class CubicCurve extends CubicCurveBase
 
   CubicCurve.fromList(List<Point> points)
       : assert(points.length == 4),
-        p0 = points[0],
-        p1 = points[1],
-        p2 = points[2],
-        p3 = points[3];
+        p0 = points[0].copyWith(),
+        p1 = points[1].copyWith(),
+        p2 = points[2].copyWith(),
+        p3 = points[3].copyWith();
 
   @override
   CubicCurve copyWith({List<Point>? points}) {
@@ -58,7 +59,7 @@ class CubicCurve extends CubicCurveBase
     required this.p3,
   });
 
-  factory CubicCurve.fromLine({required LineSegment lineSegment}) {
+  factory CubicCurve.fromLine(LineSegment lineSegment) {
     final oneThird = 1.0 / 3.0;
     final twoThirds = 2.0 / 3.0;
     return CubicCurve(
@@ -69,7 +70,7 @@ class CubicCurve extends CubicCurveBase
     );
   }
 
-  factory CubicCurve.fromQuadratic({required QuadraticCurve quadratic}) {
+  factory CubicCurve.fromQuadratic(QuadraticCurve quadratic) {
     final oneThird = 1.0 / 3.0;
     final twoThirds = 2.0 / 3.0;
     return CubicCurve(
@@ -162,7 +163,7 @@ class CubicCurve extends CubicCurveBase
   @override
   Point normal({required double at}) {
     var d = derivative(at: at);
-    if (d == Point.zero && at == 0.0 || at == 1.0) {
+    if (d == Point.zero && (at == 0.0 || at == 1.0)) {
       if (at == 0.0) {
         d = p2 - p0;
       } else {
@@ -177,8 +178,8 @@ class CubicCurve extends CubicCurveBase
 
   @override
   Point derivative({required double at}) {
-    final double mt = 1 - at;
-    final double k = 3;
+    final mt = 1 - at;
+    final k = 3.0;
     final p0 = (this.p1 - this.p0) * k;
     final p1 = (this.p2 - this.p1) * k;
     final p2 = (p3 - this.p2) * k;
@@ -309,9 +310,9 @@ class CubicCurve extends CubicCurveBase
         if (t <= 0.0 || t >= 1.0) return;
         final value = point(at: t)[d];
         if (value < mmind) {
-          mmin[d] = value;
+          mmin = mmin.copyWith(at: (d, value));
         } else if (value > mmaxd) {
-          mmax[d] = value;
+          mmax = mmax.copyWith(at: (d, value));
         }
       });
     }

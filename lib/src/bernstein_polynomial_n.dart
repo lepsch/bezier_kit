@@ -78,7 +78,7 @@ class BernsteinPolynomialN extends BernsteinPolynomial {
     var leftPoints = List.filled(coefficients.length, 0.0);
     var rightPoints = List.filled(coefficients.length, 0.0);
     final n = order;
-    var scratchPad = coefficients;
+    var scratchPad = [...coefficients];
     leftPoints[0] = scratchPad[0];
     rightPoints[n] = scratchPad[n];
     for (var j = 1; j <= n; j++) {

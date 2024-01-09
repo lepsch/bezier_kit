@@ -1,24 +1,19 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:bezier_kit/src/affine_transform.dart';
 
 class Point {
-  double get x => _xy.first.x;
-  set x(double value) => _xy.first = Float64x2(value, y);
-  double get y => _xy.first.y;
-  set y(double value) => _xy.first = Float64x2(x, value);
+  double get x => _x;
+  double get y => _y;
 
-  final Float64x2List _xy;
+  final double _x;
+  final double _y;
 
-  static final zero = Point(x: 0, y: 0);
+  static const zero = Point(x: 0, y: 0);
 
-  Point({required double x, required double y})
-      : _xy = Float64x2List(1)..first = Float64x2(x, y);
-
-  Point.fromData(Float64x2List xy) : _xy = xy;
-
-  Point.fromFloat64x2(Float64x2 xy) : _xy = Float64x2List(1)..first = xy;
+  const Point({required double x, required double y})
+      : _x = x,
+        _y = y;
 
   double get magnitude => sqrt(lengthSquared);
 
@@ -31,48 +26,38 @@ class Point {
   }
 
   Point get perpendicular {
-    return Point(x: -y, y: x);
+    return Point(x: -_y, y: _x);
   }
 
   double dot(Point other) {
-    return x * other.x + y * other.y;
+    return _x * other._x + _y * other._y;
   }
 
   Point operator +(Point other) {
-    return Point.fromFloat64x2(_xy.first + other._xy.first);
+    return Point(x: _x + other._x, y: _y + other._y);
   }
 
   Point operator -(Point other) {
-    return Point.fromFloat64x2(_xy.first - other._xy.first);
+    return Point(x: _x - other._x, y: _y - other._y);
   }
 
   Point operator -() {
-    return Point(x: -_xy.first.x, y: -_xy.first.y);
+    return Point(x: -_x, y: -_y);
   }
 
   Point operator *(num factor) {
-    return Point(x: x * factor, y: y * factor);
+    return Point(x: _x * factor, y: _y * factor);
   }
 
   Point operator /(num factor) {
-    return Point(x: x / factor, y: y / factor);
+    return Point(x: _x / factor, y: _y / factor);
   }
 
   double operator [](int index) {
     if (index == 0) {
-      return x;
+      return _x;
     } else if (index == 1) {
-      return y;
-    } else {
-      throw RangeError.index(index, this);
-    }
-  }
-
-  void operator []=(int index, double value) {
-    if (index == 0) {
-      _xy.first = Float64x2(value, _xy.first.y);
-    } else if (index == 1) {
-      _xy.first = Float64x2(_xy.first.x, value);
+      return _y;
     } else {
       throw RangeError.index(index, this);
     }
@@ -81,36 +66,54 @@ class Point {
   @override
   bool operator ==(Object other) {
     if (other is Point) {
-      return x == other.x && y == other.y;
+      return _x == other._x && _y == other._y;
     }
     return false;
   }
 
   @override
-  int get hashCode => Object.hash(x, y);
+  int get hashCode => Object.hash(_x, _y);
 
   static Point min(Point p1, Point p2) {
-    return Point(x: p1.x < p2.x ? p1.x : p2.x, y: p1.y < p2.y ? p1.y : p2.y);
+    return Point(
+        x: p1._x < p2._x ? p1._x : p2._x, y: p1._y < p2._y ? p1._y : p2._y);
   }
 
   static Point max(Point p1, Point p2) {
-    return Point(x: p1.x > p2.x ? p1.x : p2.x, y: p1.y > p2.y ? p1.y : p2.y);
+    return Point(
+        x: p1._x > p2._x ? p1._x : p2._x, y: p1._y > p2._y ? p1._y : p2._y);
   }
 
-  static final Point infinity = Point(x: double.infinity, y: double.infinity);
+  static const Point infinity = Point(x: double.infinity, y: double.infinity);
 
   static const dimensions = 2;
 
   double cross(Point other) {
-    return x * other.y - y * other.x;
+    return _x * other._y - _y * other._x;
   }
 
   Point applying(AffineTransform t) {
     return Point(
-      x: t.a * x + t.c * y + t.tx,
-      y: t.b * x + t.d * y + t.ty,
+      x: t.a * _x + t.c * _y + t.tx,
+      y: t.b * _x + t.d * _y + t.ty,
     );
   }
+
+  Point copyWith({double? x, double? y, (int index, double value)? at}) {
+    if (at != null) {
+      if (at.$1 == 0) {
+        return Point(x: at.$2, y: _y);
+      } else if (at.$1 == 1) {
+        return Point(x: _x, y: at.$2);
+      } else {
+        throw RangeError.index(at.$1, this);
+      }
+    }
+    return Point(x: x ?? _x, y: y ?? _y);
+  }
+
+  @override
+  String toString() => "x: $_x, y: $_y";
 }
 
 typedef PointList = List<Point>;

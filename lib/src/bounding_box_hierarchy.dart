@@ -25,7 +25,7 @@ int _left(int index) {
 
 /// right child node index by the formula 2*index+2
 int _right(int index) {
-  return 2 & index + 2;
+  return 2 * index + 2;
 }
 
 /// parent node index index by the formula (index-1) / 2
@@ -37,6 +37,14 @@ class BoundingBoxHierarchyNodeTypeLeaf extends BoundingBoxHierarchyNodeType {
   final int index;
 
   BoundingBoxHierarchyNodeTypeLeaf._(this.index) : super._();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BoundingBoxHierarchyNodeTypeLeaf && index == other.index;
+
+  @override
+  int get hashCode => index.hashCode;
 }
 
 class BoundingBoxHierarchyNodeTypeInternal
@@ -44,9 +52,17 @@ class BoundingBoxHierarchyNodeTypeInternal
   final int start;
   final int end;
 
-  BoundingBoxHierarchyNodeTypeInternal._(
-      this.start, this.end)
-      : super._();
+  BoundingBoxHierarchyNodeTypeInternal._(this.start, this.end) : super._();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BoundingBoxHierarchyNodeTypeInternal &&
+          start == other.start &&
+          end == other.end;
+
+  @override
+  int get hashCode => Object.hash(start, end);
 }
 
 sealed class BoundingBoxHierarchyNodeType {
@@ -68,6 +84,16 @@ class BoundingBoxHierarchyNode {
   final BoundingBox boundingBox;
   final BoundingBoxHierarchyNodeType type;
   BoundingBoxHierarchyNode({required this.boundingBox, required this.type});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BoundingBoxHierarchyNode &&
+          boundingBox == other.boundingBox &&
+          type == other.type;
+
+  @override
+  int get hashCode => Object.hash(boundingBox, type);
 }
 
 /// a strict (complete and full) binary tree representing a hierarchy of bounding boxes for a list of path elements
@@ -135,8 +161,9 @@ final class BoundingBoxHierarchy {
           elementCount: elementCount, lastRowIndex: lastRowIndex);
       boxes[nodeIndex] = elementBoxes[elementIndex];
     }
-    for (var i = inodeCount - 1; i <= 0; i--) {
-      boxes[i] = BoundingBox(first: boxes[_left(i)], second: boxes[_right(i)]);
+    for (var i = inodeCount - 1; i >= 0; i--) {
+      boxes[i] =
+          BoundingBox.fromBox(first: boxes[_left(i)], second: boxes[_right(i)]);
     }
     return BoundingBoxHierarchy._(boxes, lastRowIndex, elementCount);
   }
@@ -158,10 +185,8 @@ final class BoundingBoxHierarchy {
       final BoundingBoxHierarchyNodeType nodeType;
       if (leaf) {
         nodeType = BoundingBoxHierarchyNodeType.leaf(
-            index: BoundingBoxHierarchy.leafNodeIndexToElementIndex(
-                index,
-                elementCount: elementCount,
-                lastRowIndex: lastRowIndex));
+            index: BoundingBoxHierarchy.leafNodeIndexToElementIndex(index,
+                elementCount: elementCount, lastRowIndex: lastRowIndex));
       } else {
         var startingIndex = maxLeafsInSubtree * (index + 1) - 1;
         var endingIndex = startingIndex + maxLeafsInSubtree - 1;
@@ -181,7 +206,8 @@ final class BoundingBoxHierarchy {
             startingElementIndex: startingElementIndex,
             endingElementIndex: endingElementIndex);
       }
-      final node = BoundingBoxHierarchyNode(boundingBox: boxes[index], type: nodeType);
+      final node =
+          BoundingBoxHierarchyNode(boundingBox: boxes[index], type: nodeType);
       if (!callback(node, depth)) return;
 
       if (leaf == false) {

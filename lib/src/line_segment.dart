@@ -8,7 +8,7 @@
 
 part of 'bezier_curve.dart';
 
-abstract interface class LineSegmentBase extends BezierCurve {
+abstract interface class LineSegmentBase extends ImplicitizeableBezierCurve {
   abstract Point p0, p1;
 }
 
@@ -16,15 +16,15 @@ class LineSegment extends LineSegmentBase
     with
         LineSegmentIntersectionMixin,
         BezierCurveIntersectionMixin,
-        LineSegmentPolynomialMixin {
+        LineSegmentPolynomialMixin,
+        LineSegmentImplicitizationMixin {
   @override
   Point p0, p1;
 
   LineSegment.fromList({required List<Point> points})
-      : p0 = points[0],
-        p1 = points[1] {
-    assert(points.length == 2);
-  }
+      : assert(points.length == 2),
+        p0 = points[0].copyWith(),
+        p1 = points[1].copyWith();
 
   @override
   LineSegment copyWith({List<Point>? points}) {

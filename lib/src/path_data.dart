@@ -102,7 +102,7 @@ mixin PathDataMixin on PathBase {
             currentOrders.add(0);
           }
           components
-              .add(PathComponent(points: currentPoints, orders: currentOrders));
+              .add(PathComponent.raw(points: currentPoints, orders: currentOrders));
           currentPoints = [];
           currentOrders = [];
         }
@@ -112,7 +112,7 @@ mixin PathDataMixin on PathBase {
 
       final x = SerializationTypeCoordinate(1);
       final y = SerializationTypeCoordinate(1);
-      for (var _ = 0; _ < pointsToRead; _++) {
+      for (final _ in Iterable.generate(pointsToRead)) {
         if (!stream.readNativeValue(x)) return null;
         if (!stream.readNativeValue(y)) return null;
         final point = Point(x: x.first, y: y.first);
@@ -121,16 +121,16 @@ mixin PathDataMixin on PathBase {
     }
     if (currentOrders.isNotEmpty) {
       components
-          .add(PathComponent(points: currentPoints, orders: currentOrders));
+          .add(PathComponent.raw(points: currentPoints, orders: currentOrders));
     }
     return Path(components: components);
   }
 
   Uint8List get data {
     final expectedCoordinatesCount =
-        2 * components.fold<int>(0, ($0, $1) => ($0 + $1.points.length));
+        2 * components.fold<int>(0, ($0, $1) => $0 + $1.points.length);
     final expectedCommandsCount =
-        components.fold<int>(0, ($0, $1) => ($0 + $1.numberOfElements)) +
+        components.fold<int>(0, ($0, $1) => $0 + $1.numberOfElements) +
             components.length;
 
     // compile the data into a format we can easily serialize

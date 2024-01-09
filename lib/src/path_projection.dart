@@ -15,14 +15,14 @@ import 'package:collection/collection.dart';
 typedef _Candidate = ({Point point, IndexedPathLocation location});
 
 extension PathProjectionExtension on Path {
-  _Candidate? _searchForClosestLocation(
-      {required Point to,
-      required double maximumDistance,
-      required bool requireBest}) {
+  _Candidate? _searchForClosestLocation({
+    required Point to,
+    required double maximumDistance,
+    required bool requireBest,
+  }) {
     // sort the components by proximity to avoid searching distant components later on
     final tuples = components.indexed.map((p) {
-      final i = p.$1;
-      final component = p.$2;
+      final (i, component) = p;
       final boundingBox = component.boundingBox;
       final upper = boundingBox.upperBoundOfDistance(to: to);
       return (component: component, index: i, upperBound: upper);
@@ -60,7 +60,10 @@ extension PathProjectionExtension on Path {
         to: point, maximumDistance: double.infinity, requireBest: true);
   }
 
-  bool pointIsWithinDistanceOfBoundary(Point point, double distance) {
+  bool pointIsWithinDistanceOfBoundary(
+    Point point, {
+    required double distance,
+  }) {
     return _searchForClosestLocation(
             to: point, maximumDistance: distance, requireBest: false) !=
         null;
@@ -78,10 +81,11 @@ extension PathComponentProjectionExtension on PathComponent {
   }
 
   ({Point point, IndexedPathComponentLocation location})?
-      _searchForClosestLocation(
-          {required Point to,
-          required double maximumDistance,
-          required bool requireBest}) {
+      _searchForClosestLocation({
+    required Point to,
+    required double maximumDistance,
+    required bool requireBest,
+  }) {
     IndexedPathComponentLocation? bestSoFar;
     bvh.visit((node, _) {
       if (!requireBest && bestSoFar != null) {
@@ -95,8 +99,8 @@ extension PathComponentProjectionExtension on PathComponent {
       if (requireBest == false) {
         final upperBound = boundingBox.upperBoundOfDistance(to: to);
         if (upperBound <= maximumDistance) {
-          maximumDistance =
-              upperBound; // restrict the search to this new upper bound
+          // restrict the search to this new upper bound
+          maximumDistance = upperBound;
           bestSoFar = _anyLocation(node);
           return false;
         }
@@ -126,9 +130,8 @@ extension PathComponentProjectionExtension on PathComponent {
   ({Point point, IndexedPathComponentLocation location}) project(Point point) {
     final result = _searchForClosestLocation(
         to: point, maximumDistance: double.infinity, requireBest: true);
+    assert(result != null, "expected non-empty result");
     if (result == null) {
-      // Verificar todos os asserts pois não são exceptions
-      // throw Exception("expected non-empty result");
       return (point: startingPoint, location: startingIndexedLocation);
     }
     return result;

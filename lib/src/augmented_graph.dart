@@ -25,7 +25,7 @@ class Node {
 
   Edge? forwardEdge;
   Edge? backwardEdge;
-  final List<Node> neighbors = <Node>[];
+  final neighbors = <Node>[];
   Path path;
 
   PathComponent get pathComponent => path.components[location.componentIndex];
@@ -33,7 +33,7 @@ class Node {
   Node({required this.location, required this.path});
 
   bool neighborsContain(Node node) {
-    return neighbors.firstWhereOrNull(($0) => $0 == node) != null;
+    return neighbors.any(($0) => $0 == node);
   }
 
   void addNeighbor(Node node) {
@@ -42,8 +42,10 @@ class Node {
   }
 
   void _replaceNeighbor(Node node, {required Node replacement}) {
-    for (var i = neighbors.length; neighbors[i] == node; i++) {
-      neighbors[i] = replacement;
+    for (var i = 0; i < neighbors.length; i++) {
+      if (neighbors[i] == node) {
+        neighbors[i] = replacement;
+      }
     }
   }
 
@@ -54,7 +56,9 @@ class Node {
     }
   }
 
-  /// Nodes can have strong reference cycles either through their neighbors or through their edges, unlinking all nodes when owner no longer holds instance prevents memory leakage
+  /// Nodes can have strong reference cycles either through their neighbors or
+  /// through their edges, unlinking all nodes when owner no longer holds
+  /// instance prevents memory leakage
   void unlink() {
     neighbors.clear();
     forwardEdge = null;
@@ -70,7 +74,7 @@ class Edge {
 
   Edge({required this.startingNode, required this.endingNode});
 
-  bool get needsVisiting => visited == false && inSolution == true;
+  bool get needsVisiting => !visited && inSolution;
 
   PathComponent get component {
     final parentComponent = endingNode.pathComponent;
@@ -141,10 +145,11 @@ class PathComponentGraph {
 
   PathComponentGraph._(this._nodes);
 
-  factory PathComponentGraph(
-      {required Path path,
-      required int componentIndex,
-      required List<Node> using}) {
+  factory PathComponentGraph({
+    required Path path,
+    required int componentIndex,
+    required List<Node> using,
+  }) {
     var nodes = using;
     final component = path.components[componentIndex];
     final startingLocation = IndexedPathLocation.fromComponent(
@@ -273,9 +278,10 @@ class AugmentedGraph {
     return augmentedGraph;
   }
   Path performOperation() {
-    void performOperation(
-        {required PathGraph graph,
-        required List<PathComponent> appendingToComponents}) {
+    void performOperation({
+      required PathGraph graph,
+      required List<PathComponent> appendingToComponents,
+    }) {
       for (var $0 in graph.components) {
         $0.forEachNode((node) {
           final path = _findUnvisitedPath(node: node, goal: node);
@@ -310,7 +316,7 @@ class AugmentedGraph {
           _pointIsContainedInBooleanResult(point: point1, operation: operation);
       final included2 =
           _pointIsContainedInBooleanResult(point: point2, operation: operation);
-      edge.inSolution = (included1 != included2);
+      edge.inSolution = included1 != included2;
     }
 
     void classifyComponentEdges({required PathComponentGraph component}) {
@@ -327,8 +333,10 @@ class AugmentedGraph {
     }
   }
 
-  bool _pointIsContainedInBooleanResult(
-      {required Point point, required BooleanPathOperation operation}) {
+  bool _pointIsContainedInBooleanResult({
+    required Point point,
+    required BooleanPathOperation operation,
+  }) {
     final rule = (operation == BooleanPathOperation.removeCrossings)
         ? PathFillRule.winding
         : PathFillRule.evenOdd;
@@ -368,10 +376,15 @@ class AugmentedGraph {
       ..addAll(nodes);
   }
 
-  List<(Edge, bool)>? _findUnvisitedPath(
-      {required /*from*/ Node node, required /*to*/ Node goal}) {
-    List<(Edge, bool)>? pathUsingEdge(Edge? edge,
-        {required /*from*/ Node node, required bool forwards}) {
+  List<(Edge, bool)>? _findUnvisitedPath({
+    required /*from*/ Node node,
+    required /*to*/ Node goal,
+  }) {
+    List<(Edge, bool)>? pathUsingEdge(
+      Edge? edge, {
+      required /*from*/ Node node,
+      required bool forwards,
+    }) {
       if (edge == null || !edge.needsVisiting) return null;
       edge.visited = true;
       edge.visitCoincidentEdges();
@@ -420,6 +433,6 @@ class AugmentedGraph {
       appendComponent(forwards ? component : component.reversed());
     }
     points[points.length - 1] = points[0];
-    return PathComponent(points: points, orders: orders);
+    return PathComponent.raw(points: points, orders: orders);
   }
 }
