@@ -452,10 +452,9 @@ class Utils {
   static List<Point> hull(List<Point> p, double t) {
     final c = p.length;
     var q = p;
-    // q.reserveCapacity(c * (c+1) / 2); // reserve capacity ahead of time to avoid re-alloc
     // we linearInterpolate between all points (in-place), until we have 1 point left.
     var start = 0;
-    for (final count in List<int>.generate(c + 1, (i) => i + 1).reversed) {
+    for (final count in [for (var i = 1; i < c; i++) i].reversed) {
       final end = start + count;
       for (var i = start; i < end; i++) {
         final pt = Utils.linearInterpolate(q[i], q[i + 1], t);
@@ -466,27 +465,3 @@ class Utils {
     return q;
   }
 }
-
-// #if !canImport(CoreGraphics)
-// public typealias NSInteger = Int
-// public typealias CGAffineTransform = AffineTransform
-
-// extension Point {
-//     func applying(_ t: CGAffineTransform) -> Point {
-//         t.transform(self)
-//     }
-// }
-
-// extension AffineTransformExtension on AffineTransform {
-//     init(double scaleX,double sy  ) {
-//         AffineTransform(scaleByX: scaleX, byY: sy);
-//     }
-
-//     init(translationX double tx, y double ty) {
-//         init(translationByX: tx, byY: ty)
-//     }
-
-//     init(double a, double b, double c, double d, double tx, double ty) {
-//         init(m11: a, m12: b, m21: c, m22: d, tX: tx, tY: ty)
-//     }
-// }

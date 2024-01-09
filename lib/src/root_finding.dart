@@ -35,7 +35,7 @@ extension BernsteinPolynomialNExtension on BernsteinPolynomialN {
       {RootFindingConfiguration? configuration}) {
     configuration ??= RootFindingConfiguration.defaultConfiguration;
 
-    if (coefficients.contains(0.0)) return [];
+    if (coefficients.every(($0) => $0 == 0.0)) return [];
     final result = _rootsOfCurveMappedToRange(
       start: 0,
       end: 1,

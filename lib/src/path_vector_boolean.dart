@@ -51,8 +51,11 @@ extension PathVectorBooleanExtension on Path {
 }
 
 extension on Path {
-  Path performBooleanOperation(BooleanPathOperation operation,
-      {required Path other, required double accuracy}) {
+  Path performBooleanOperation(
+    BooleanPathOperation operation, {
+    required Path other,
+    required double accuracy,
+  }) {
     final intersections = this.intersections(other: other, accuracy: accuracy);
     final augmentedGraph = AugmentedGraph(
       path1: this,

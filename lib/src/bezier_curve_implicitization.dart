@@ -9,9 +9,6 @@
 import 'dart:math';
 
 import 'package:bezier_kit/bezier_kit.dart';
-import 'package:bezier_kit/src/bernstein_polynomial_n.dart';
-import 'package:bezier_kit/src/point.dart';
-import 'package:bezier_kit/src/polynomial.dart';
 import 'package:bezier_kit/src/utils.dart';
 import 'package:collection/collection.dart';
 
@@ -233,13 +230,14 @@ extension on BezierCurve {
   }
 }
 
-mixin LineSegmentImplicitizationMixin on LineSegmentBase {
+mixin LineSegmentImplicitizationMixin on LineSegmentBase implements Implicitizeable {
+  @override
   ImplicitPolynomial get implicitPolynomial {
     return ImplicitPolynomial._fromLine(l(0, 1));
   }
 }
 
-mixin QuadraticCurveImplicitizationMixin on QuadraticCurveBase {
+mixin QuadraticCurveImplicitizationMixin on QuadraticCurveBase implements Implicitizeable {
   @override
   ImplicitPolynomial get implicitPolynomial {
     final l20 = l(2, 0);
@@ -250,7 +248,7 @@ mixin QuadraticCurveImplicitizationMixin on QuadraticCurveBase {
   }
 }
 
-mixin CubicCurveImplicitizationMixin on CubicCurveBase {
+mixin CubicCurveImplicitizationMixin on CubicCurveBase implements Implicitizeable {
   @override
   ImplicitPolynomial get implicitPolynomial {
     final l32 = l(3, 2);

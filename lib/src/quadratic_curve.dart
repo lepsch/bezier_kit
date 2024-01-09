@@ -23,9 +23,9 @@ class QuadraticCurve extends QuadraticCurveBase
 
   QuadraticCurve.fromList({required List<Point> points})
       : assert(points.length == 3),
-        p0 = points[0],
-        p1 = points[1],
-        p2 = points[2];
+        p0 = points[0].copyWith(),
+        p1 = points[1].copyWith(),
+        p2 = points[2].copyWith();
 
   QuadraticCurve({required this.p0, required this.p1, required this.p2});
 
@@ -195,8 +195,8 @@ class QuadraticCurve extends QuadraticCurveBase
     final p1 = this.p1;
     final p2 = this.p2;
 
-    final mmin = Point.min(p0, p2);
-    final mmax = Point.max(p0, p2);
+    var mmin = Point.min(p0, p2);
+    var mmax = Point.max(p0, p2);
 
     final d0 = p1 - p0;
     final d1 = p2 - p1;
@@ -206,9 +206,9 @@ class QuadraticCurve extends QuadraticCurveBase
         if (t <= 0.0 || t >=1.0) return;
         final value = point(at: t)[d];
         if (value < mmin[d]) {
-          mmin[d] = value;
+          mmin = mmin.copyWith(at: (d, value));
         } else if (value > mmax[d]) {
-          mmax[d] = value;
+          mmax = mmax.copyWith(at: (d, value));
         }
       });
     }

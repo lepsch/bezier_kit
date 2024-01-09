@@ -20,9 +20,10 @@ class Subcurve<CurveType extends BezierCurve> {
   Subcurve<CurveType> split({required double from, required double to}) {
     final curve = this.curve.split(from: from, to: to);
     return Subcurve<CurveType>(
-        t1: Utils.map(from, 0, 1, this.t1, this.t2),
-        t2: Utils.map(t2, 0, 1, this.t1, this.t2),
-        curve: curve as CurveType);
+      t1: Utils.map(from, 0, 1, this.t1, this.t2),
+      t2: Utils.map(to, 0, 1, this.t1, this.t2),
+      curve: curve as CurveType,
+    );
   }
 
   ({Subcurve<CurveType> left, Subcurve<CurveType> right}) splitAt(double at) {
@@ -34,4 +35,14 @@ class Subcurve<CurveType extends BezierCurve> {
         t1: tSplit, t2: t2, curve: curveSplit.right as CurveType);
     return (left: subcurveLeft, right: subcurveRight);
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! Subcurve) return false;
+    return t1 == other.t1 && t2 == other.t2 && curve == other.curve;
+  }
+
+  @override
+  int get hashCode => Object.hash(t1, t2, curve);
 }
