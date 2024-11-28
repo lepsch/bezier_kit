@@ -65,8 +65,10 @@ void main() {
     final forward = testQuadCurve.offset(distance: 2)[0];
     final back = testQuadCurve.offset(distance: -2)[0];
     final s = Shape(forward, back, false, false);
-    expect(s.boundingBox,
-        BoundingBox.fromBox(first: forward.boundingBox, second: back.boundingBox));
+    expect(
+        s.boundingBox,
+        BoundingBox.fromBox(
+            first: forward.boundingBox, second: back.boundingBox));
   });
 
   test("Intersects", () {

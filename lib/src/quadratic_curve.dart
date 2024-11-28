@@ -203,7 +203,7 @@ class QuadraticCurve extends QuadraticCurveBase
 
     for (var d = 0; d < Point.dimensions; d++) {
       Utils.droots(d0[d], d1[d], callback: (t) {
-        if (t <= 0.0 || t >=1.0) return;
+        if (t <= 0.0 || t >= 1.0) return;
         final value = point(at: t)[d];
         if (value < mmin[d]) {
           mmin = mmin.copyWith(at: (d, value));
