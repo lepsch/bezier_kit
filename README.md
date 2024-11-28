@@ -1,24 +1,18 @@
-# BezierKit
+# bezier_kit
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/hfutrell/BezierKit/branch/master/graph/badge.svg)](https://codecov.io/gh/hfutrell/BezierKit)
-[![CocoaPods Compatible](https://img.shields.io/cocoapods/v/BezierKit.svg)](https://img.shields.io/cocoapods/v/BezierKit.svg)
+[![bezier_kit](https://github.com/lepsch/bezier_kit/actions/workflows/dart.yaml/badge.svg)](https://github.com/lepsch/bezier_kit/actions/workflows/dart.yaml)
 
-BezierKit is a comprehensive Bezier Path library written in Swift.
+`bezier_kit` is a comprehensive Bezier Path library written in Dart.
 
-- [Warning! Prerelease software!](#warning-prerelease-software)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [License](#license)
+## About
 
-## Warning! Prerelease software!
-
-Please note that BezierKit is currently pre-release software. Its releases follow [semantic versioning](https://semver.org/) which means that until it reaches 1.0 status the API may not be stable or backwards compatible.
+`bezier_kit` has been manually converted from the original
+[BezierKit in Swift](https://github.com/hfutrell/BezierKit).
+It's based on the fork of [LAPACK ref 11a87c26](https://github.com/hfutrell/BezierKit/commits/11a87c261d03ac4d0a7c8d20595b841e5307e8cb)
+from June 28 of 2022 (Around LAPACK version 0.15.0).
 
 ## Features
 - [x] Constructs linear (line segment), quadratic, and cubic Bézier curves
-- [x] Draws curves via CoreGraphics
 - [x] Determines positions, derivatives, and normals along curves
 - [x] Lengths of curves via Legendre-Gauss quadrature
 - [x] Intersects curves and computes cubic curve self-intersection to any degree of accuracy
@@ -32,52 +26,25 @@ Please note that BezierKit is currently pre-release software. Its releases follo
 
 ## Installation
 
-### CocoaPods
+Dart
 
-[CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
-
-```bash
-$ gem install cocoapods
+```shell
+dart pub add dart_lapack
 ```
 
-To integrate BezierKit into your Xcode project using CocoaPods, add it to your target in your `Podfile`:
+Flutter
 
-```ruby
-target '<Your Target Name>' do
-    pod 'BezierKit', '>= 0.15.0'
-end
-```
-
-Then, run the following command:
-
-```bash
-$ pod install
-```
-
-### Swift Package Manager
-
-The [Swift Package Manager](https://swift.org/package-manager/) is a tool for automating the distribution of Swift code and is integrated into the `swift` compiler.
-Once you have your Swift package set up, adding BezierKit as a dependency is as easy as adding it to the `dependencies` value of your `Package.swift`.
-
-```swift
-// swift-tools-version:5.0
-import PackageDescription
-
-let package = Package(
-    name: "<Your Target Name>",
-    dependencies: [
-        .package(url: "https://github.com/hfutrell/BezierKit.git", from: "0.15.0"),
-    ]
-)
+```shell
+flutter pub add dart_lapack
 ```
 
 ## Usage
 
 ### Constructing & Drawing Curves
 
-BezierKit supports cubic Bezier curves (`CubicCurve`) and quadratic Bezier curves (`QuadraticCurve`) as well as line segments (`LineSegment`) each of which adopts the `BezierCurve` protocol that encompasses most API functionality.
+`bezier_kit` supports cubic Bezier curves (`CubicCurve`) and quadratic Bezier curves (`QuadraticCurve`) as well as line segments (`LineSegment`) each of which adopts the `BezierCurve` protocol that encompasses most API functionality.
 
-<img src="https://raw.githubusercontent.com/hfutrell/BezierKit/master/images/usage-construct.png" width="256" height="256">
+<img src="https://raw.githubusercontent.com/lepsch/bezier_kit/main/images/usage-construct.png" width="256" height="256">
 
 ```swift
 import BezierKit
@@ -88,7 +55,7 @@ let curve = CubicCurve(
     p2: CGPoint(x: 110, y: 100),
     p3: CGPoint(x: 150, y: 195)
  )
- 
+
  let context: CGContext = ...       // your graphics context here
  Draw.drawSkeleton(context, curve)  // draws visual representation of curve control points
  Draw.drawCurve(context, curve)     // draws the curve itself
@@ -146,6 +113,17 @@ Draw.drawBoundingBox(context, boundingBox: curve.boundingBox)
 
 BezierKit is a powerful library with *a lot* of functionality. For the time being the best way to see what it offers is to build the MacDemos target and check out each of the provided demos.
 
+## Testing
+
+`bezier_kit` includes the entire test suite from the original sources converted
+from Swift to Dart.
+
+To run the test suite do:
+
+```shell
+dart test
+```
+
 ## License
 
-BezierKit is released under the MIT license. [See LICENSE](https://github.com/hfutrell/BezierKit/blob/master/LICENSE) for details.
+`bezier_kit` is released under the MIT license. [See LICENSE](https://github.com/lepsch/bezier_kit/blob/main/LICENSE) for details.
