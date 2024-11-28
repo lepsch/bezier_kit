@@ -40,7 +40,7 @@ void main() {
     expect(projection!.location,
         IndexedPathLocation(componentIndex: 1, elementIndex: 2, t: 0.5));
     expect(projection.point, Point(x: 2.5, y: 1.5));
-  }, skip: "Fix Path.project(Point) implementation.");
+  });
 
   test("projects onto the correct on-curve point", () {
     final b = QuadraticCurve(
