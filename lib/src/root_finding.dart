@@ -1,9 +1,6 @@
-//
-//  RootFinding.swift
-//  GraphicsPathNearest
-//
-//  Created by Holmes Futrell on 2/23/21.
-//
+// Copyright (c) 2023-2024 Guilherme Lepsch. All rights reserved. Use of
+// this source code is governed by MIT license that can be found in the
+// [LICENSE file](https://github.com/lepsch/bezier_kit/blob/main/LICENSE).
 
 import 'package:bezier_kit/src/bernstein_polynomial_n.dart';
 import 'package:bezier_kit/src/point.dart';

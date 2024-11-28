@@ -1,10 +1,6 @@
-//
-//  BezierCurve+Intersection.swift
-//  BezierKit
-//
-//  Created by Holmes Futrell on 3/18/19.
-//  Copyright © 2019 Holmes Futrell. All rights reserved.
-//
+// Copyright (c) 2023-2024 Guilherme Lepsch. All rights reserved. Use of
+// this source code is governed by MIT license that can be found in the
+// [LICENSE file](https://github.com/lepsch/bezier_kit/blob/main/LICENSE).
 
 part of './bezier_curve.dart';
 

@@ -1,10 +1,6 @@
-//
-//  CubicCurve.swift
-//  BezierKit
-//
-//  Created by Holmes Futrell on 10/28/16.
-//  Copyright © 2016 Holmes Futrell. All rights reserved.
-//
+// Copyright (c) 2023-2024 Guilherme Lepsch. All rights reserved. Use of
+// this source code is governed by MIT license that can be found in the
+// [LICENSE file](https://github.com/lepsch/bezier_kit/blob/main/LICENSE).
 
 part of 'bezier_curve.dart';
 
