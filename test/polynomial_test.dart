@@ -1,10 +1,6 @@
-//
-//  PolynomialTests.swift
-//  BezierKit
-//
-//  Created by Holmes Futrell on 5/15/20.
-//  Copyright © 2020 Holmes Futrell. All rights reserved.
-//
+// Copyright (c) 2023-2024 Guilherme Lepsch. All rights reserved. Use of
+// this source code is governed by MIT license that can be found in the
+// [LICENSE file](https://github.com/lepsch/bezier_kit/blob/main/LICENSE).
 
 import 'package:bezier_kit/bezier_kit.dart';
 import 'package:test/test.dart';
