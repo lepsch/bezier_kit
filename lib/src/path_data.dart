@@ -101,8 +101,8 @@ mixin PathDataMixin on PathBase {
             assert(currentPoints.length == 1);
             currentOrders.add(0);
           }
-          components
-              .add(PathComponent.raw(points: currentPoints, orders: currentOrders));
+          components.add(
+              PathComponent.raw(points: currentPoints, orders: currentOrders));
           currentPoints = [];
           currentOrders = [];
         }

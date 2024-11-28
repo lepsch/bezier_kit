@@ -230,14 +230,16 @@ extension on BezierCurve {
   }
 }
 
-mixin LineSegmentImplicitizationMixin on LineSegmentBase implements Implicitizeable {
+mixin LineSegmentImplicitizationMixin on LineSegmentBase
+    implements Implicitizeable {
   @override
   ImplicitPolynomial get implicitPolynomial {
     return ImplicitPolynomial._fromLine(l(0, 1));
   }
 }
 
-mixin QuadraticCurveImplicitizationMixin on QuadraticCurveBase implements Implicitizeable {
+mixin QuadraticCurveImplicitizationMixin on QuadraticCurveBase
+    implements Implicitizeable {
   @override
   ImplicitPolynomial get implicitPolynomial {
     final l20 = l(2, 0);
@@ -248,7 +250,8 @@ mixin QuadraticCurveImplicitizationMixin on QuadraticCurveBase implements Implic
   }
 }
 
-mixin CubicCurveImplicitizationMixin on CubicCurveBase implements Implicitizeable {
+mixin CubicCurveImplicitizationMixin on CubicCurveBase
+    implements Implicitizeable {
   @override
   ImplicitPolynomial get implicitPolynomial {
     final l32 = l(3, 2);

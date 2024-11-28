@@ -133,10 +133,9 @@ class BezierKitTestHelpers {
     // ensure that it conains the extrema
     final extrema = curve.extrema().all;
     for (final e in extrema) {
-      final extremaExistsInSolution = result.any( (subcurve) =>
-        (subcurve.t1 - e).abs() <= reduceStepSize ||
-            (subcurve.t2 - e).abs() <= reduceStepSize
-      );
+      final extremaExistsInSolution = result.any((subcurve) =>
+          (subcurve.t1 - e).abs() <= reduceStepSize ||
+          (subcurve.t2 - e).abs() <= reduceStepSize);
       if (!extremaExistsInSolution) return false;
     }
     // ensure that each subcurve is simple
@@ -148,9 +147,7 @@ class BezierKitTestHelpers {
           extrema.any(($0) => ($0 - t).abs() <= reduceStepSize);
       if (!isNearExtrema && t != 1.0) {
         if (curve
-            .split(
-                from: subcurve.t1,
-                to: Utils.clamp(t + reduceStepSize, 0, 1))
+            .split(from: subcurve.t1, to: Utils.clamp(t + reduceStepSize, 0, 1))
             .simple) {
           return false; // we could have expanded subcurve and still had a simple result
         }

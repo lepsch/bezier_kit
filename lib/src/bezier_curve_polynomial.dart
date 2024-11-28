@@ -16,7 +16,8 @@ abstract interface class ComponentPolynomials<
   Polynomial get yPolynomial;
 }
 
-mixin LineSegmentPolynomialMixin on LineSegmentBase implements ComponentPolynomials {
+mixin LineSegmentPolynomialMixin on LineSegmentBase
+    implements ComponentPolynomials {
   @override
   BernsteinPolynomial1 get xPolynomial {
     return BernsteinPolynomial1(b0: p0.x, b1: p1.x);
@@ -28,7 +29,8 @@ mixin LineSegmentPolynomialMixin on LineSegmentBase implements ComponentPolynomi
   }
 }
 
-mixin QuadraticCurvePolynomialMixin on QuadraticCurveBase implements ComponentPolynomials {
+mixin QuadraticCurvePolynomialMixin on QuadraticCurveBase
+    implements ComponentPolynomials {
   @override
   BernsteinPolynomial2 get xPolynomial {
     return BernsteinPolynomial2(b0: p0.x, b1: p1.x, b2: p2.x);
