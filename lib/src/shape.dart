@@ -41,7 +41,7 @@ class ShapeCap {
   ShapeCap({required this.curve, required this.virtual});
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! ShapeCap) return false;
     return curve == other.curve && virtual == other.virtual;
@@ -106,7 +106,7 @@ class Shape {
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! Shape) return false;
     return startcap == other.startcap &&

@@ -352,7 +352,7 @@ class CubicCurve extends CubicCurveBase
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is CubicCurve) {
       return p0 == other.p0 &&
