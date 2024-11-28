@@ -128,6 +128,7 @@ void main() {
     final dataCount = 50;
     final curves = generateRandomCurves(count: dataCount, reseed: 2);
     measure(() {
+      // ignore: unused_local_variable
       var count = 0.0;
       for (final curve1 in curves) {
         for (final curve2 in curves) {
@@ -145,6 +146,7 @@ void main() {
     final dataCount = 250;
     final curves = generateRandomCurves(count: dataCount, reseed: 3);
     measure(() {
+      // ignore: unused_local_variable
       var count = 0.0;
       for (final curve1 in curves) {
         // create a curve that starts at the other curve's endpoint
@@ -215,8 +217,8 @@ void main() {
     );
     // about 0.31s in -Onone, 0.033s in -Ospeed
     measure(() {
-      var pointsTested = 0;
-      var totalDistance = 0.0;
+      // ignore: unused_local_variable
+      var pointsTested = 0, totalDistance = 0.0;
       for (var x = -maxRadius; x <= maxRadius; x += 10) {
         for (var y = -maxRadius; y <= maxRadius; y += 10) {
           // print("($x, $y)")

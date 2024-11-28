@@ -161,7 +161,7 @@ class Path extends PathBase
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! Path) return false;
     return ListEquality().equals(components, other.components);
@@ -299,7 +299,7 @@ class IndexedPathLocation {
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! IndexedPathLocation) return false;
     return componentIndex == other.componentIndex &&
@@ -364,7 +364,7 @@ class PathIntersection {
                 componentIntersection.indexedComponentLocation2);
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! PathIntersection) return false;
     return indexedPathLocation1 == other.indexedPathLocation1 &&

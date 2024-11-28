@@ -157,7 +157,7 @@ sealed class BezierCurve
   BezierCurve copy({required AffineTransform using});
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! BezierCurve) return false;
     return ListEquality().equals(points, other.points);

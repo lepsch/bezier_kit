@@ -371,7 +371,7 @@ class PathComponent implements Reversible, Transformable {
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! PathComponent) return false;
     return ListEquality().equals(orders, other.orders) &&
@@ -610,7 +610,7 @@ class IndexedPathComponentLocation {
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! IndexedPathComponentLocation) return false;
     return elementIndex == other.elementIndex && t == other.t;
@@ -668,7 +668,7 @@ class PathComponentRange {
   }
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! PathComponentRange) return false;
     return start == other.start && end == other.end;

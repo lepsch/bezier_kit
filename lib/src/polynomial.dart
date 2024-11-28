@@ -448,6 +448,6 @@ List<double> findDistinctRoots<P extends BernsteinPolynomial>({
         lastFoundRoot = root;
         return root;
       })
-      .whereNotNull()
+      .nonNulls
       .toList();
 }

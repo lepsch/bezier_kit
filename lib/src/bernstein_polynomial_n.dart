@@ -28,7 +28,7 @@ class BernsteinPolynomialN extends BernsteinPolynomial {
             "Bezier curves require at least one point");
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! BernsteinPolynomialN) return false;
     return ListEquality().equals(coefficients, other.coefficients);
