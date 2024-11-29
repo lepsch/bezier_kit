@@ -12,6 +12,7 @@ It's based on the fork of [LAPACK ref 11a87c26](https://github.com/hfutrell/Bezi
 from June 28 of 2022 (Around LAPACK version 0.15.0).
 
 ## Features
+
 - [x] Constructs linear (line segment), quadratic, and cubic Bézier curves
 - [x] Determines positions, derivatives, and normals along curves
 - [x] Lengths of curves via Legendre-Gauss quadrature
@@ -42,23 +43,26 @@ flutter pub add dart_lapack
 
 ### Constructing & Drawing Curves
 
-`bezier_kit` supports cubic Bezier curves (`CubicCurve`) and quadratic Bezier curves (`QuadraticCurve`) as well as line segments (`LineSegment`) each of which adopts the `BezierCurve` protocol that encompasses most API functionality.
+`bezier_kit` supports cubic Bezier curves (`CubicCurve`) and quadratic Bezier
+curves (`QuadraticCurve`) as well as line segments (`LineSegment`) each of which
+adopts the `BezierCurve` protocol that encompasses most API functionality.
 
 <img src="https://raw.githubusercontent.com/lepsch/bezier_kit/main/images/usage-construct.png" width="256" height="256">
 
-```swift
-import BezierKit
+```dart
+import 'package:bezier_kit/bezier_kit.dart';
 
-let curve = CubicCurve(
-    p0: CGPoint(x: 100, y: 25),
-    p1: CGPoint(x: 10, y: 90),
-    p2: CGPoint(x: 110, y: 100),
-    p3: CGPoint(x: 150, y: 195)
- )
+final curve = CubicCurve(
+  p0: Point(x: 100, y: 25),
+  p1: Point(x: 10, y: 90),
+  p2: Point(x: 110, y: 100),
+  p3: Point(x: 150, y: 195),
+);
 
- let context: CGContext = ...       // your graphics context here
- Draw.drawSkeleton(context, curve)  // draws visual representation of curve control points
- Draw.drawCurve(context, curve)     // draws the curve itself
+final canvas: Canvas = ...        // your graphics context here
+final draw = Draw(canvas);
+draw.drawSkeleton(curve: curve);  // draws visual representation of curve control points
+draw.drawCurve(curve: curve);     // draws the curve itself
 ```
 
 ### Intersecting Curves
@@ -67,16 +71,16 @@ The `intersections(with curve: BezierCurve) -> [Intersection]` method determines
 
 Cubic curves may self-intersect which can be determined by calling the `selfIntersections()` method.
 
-<img src="https://raw.githubusercontent.com/hfutrell/BezierKit/master/images/usage-intersects.png" width="256" height="256">
+<img src="https://raw.githubusercontent.com/lepsch/bezier_kit/main/images/usage-intersects.png" width="256" height="256">
 
-```swift
-let intersections: [Intersection] = curve1.intersections(with: curve2)
-let points: [CGPoint] = intersections.map { curve1.point(at: $0.t1) }
+```dart
+final intersections = curve1.intersectionsWithCurve(curve2);
+final points = intersections.map((i) => curve1.point(at: i.t1));
 
-Draw.drawCurve(context, curve: curve1)
-Draw.drawCurve(context, curve: curve2)
-for p in points {
-    Draw.drawPoint(context, origin: p)
+draw.drawCurve(curve: curve1);
+draw.drawCurve(curve: curve2);
+for (final p in points) {
+  draw.drawPoint(origin: p);
 }
 ```
 
@@ -84,34 +88,36 @@ for p in points {
 
 The `split(from:, to:)` method produces a subcurve over a given range of t-values. The `split(at:)` method can be used to produce a left subcurve and right subcurve created by splitting across a single t-value.
 
-<img src="https://raw.githubusercontent.com/hfutrell/BezierKit/master/images/usage-split.png" width="256" height="256">
+<img src="https://raw.githubusercontent.com/lepsch/bezier_kit/main/images/usage-split.png" width="256" height="256">
 
-```swift
-Draw.setColor(context, color: Draw.lightGrey)
-Draw.drawSkeleton(context, curve: curve)
-Draw.drawCurve(context, curve: curve)
-let subcurve = curve.split(from: 0.25, to: 0.75) // or try (leftCurve, rightCurve) = curve.split(at:)
-Draw.setColor(context, color: Draw.red)
-Draw.drawCurve(context, curve: subcurve)
-Draw.drawCircle(context, center: curve.point(at: 0.25), radius: 3)
-Draw.drawCircle(context, center: curve.point(at: 0.75), radius: 3)
+```dart
+draw.setColor(color: Draw.lightGrey);
+draw.drawSkeleton(curve: curve);
+draw.drawCurve(curve: curve);
+final subcurve = curve.split(from: 0.25, to: 0.75); // or try (leftCurve, rightCurve) = curve.split(at:)
+draw.setColor(color: Draw.red);
+draw.drawCurve(curve: subcurve);
+draw.drawCircle(center: curve.point(at: 0.25), radius: 3);
+draw.drawCircle(center: curve.point(at: 0.75), radius: 3);
 ```
 
 ### Determining Bounding Boxes
 
-<img src="https://raw.githubusercontent.com/hfutrell/BezierKit/master/images/usage-bounding-box.png" width="256" height="256">
+<img src="https://raw.githubusercontent.com/lepsch/bezier_kit/main/images/usage-bounding-box.png" width="256" height="256">
 
-```swift
-let boundingBox = curve.boundingBox
-Draw.drawSkeleton(context, curve: curve)
-Draw.drawCurve(context, curve: curve)
-Draw.setColor(context, color: Draw.pinkish)
-Draw.drawBoundingBox(context, boundingBox: curve.boundingBox)
+```dart
+final boundingBox = curve.boundingBox;
+draw.drawSkeleton(context, curve: curve);
+draw.drawCurve(context, curve: curve);
+draw.setColor(context, color: Draw.pinkish);
+draw.drawBoundingBox(context, boundingBox: curve.boundingBox);
 ```
 
 ### More
 
-BezierKit is a powerful library with *a lot* of functionality. For the time being the best way to see what it offers is to build the MacDemos target and check out each of the provided demos.
+`bezier_kit` is a powerful library with **a lot** of functionality. For the time
+being the best way to see what it offers is to build the example Flutter app and
+check out each of the provided demos.
 
 ## Testing
 
