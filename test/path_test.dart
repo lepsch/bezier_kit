@@ -6,7 +6,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bezier_kit/bezier_kit.dart';
-import 'package:bezier_kit/src/mutable_path.dart';
 import 'package:test/test.dart';
 
 extension on double {

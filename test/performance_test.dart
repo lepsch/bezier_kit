@@ -5,7 +5,6 @@
 import 'dart:math';
 
 import 'package:bezier_kit/bezier_kit.dart';
-import 'package:bezier_kit/src/mutable_path.dart';
 import 'package:test/test.dart';
 
 var rnd = Random();
