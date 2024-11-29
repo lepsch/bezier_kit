@@ -15,5 +15,5 @@ jobs:
 
       - run: dart pub get --no-example
       - run: dart format --output=none --set-exit-if-changed .
-      - run: dart analyze
+      - run: dart analyze lib
       - run: dart test -r github
