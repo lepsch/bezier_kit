@@ -1,6 +1,6 @@
 name: bezier_kit
 description: Bezier curves and paths in Dart for building vector applications
-version: 0.1.0
+version: 0.1.1
 homepage: https://www.lepsch.com/
 repository: https://github.com/lepsch/bezier_kit/
 

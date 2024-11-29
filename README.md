@@ -8,7 +8,7 @@
 
 `bezier_kit` has been manually converted from the original
 [BezierKit in Swift](https://github.com/hfutrell/BezierKit).
-It's based on the fork of [LAPACK ref 11a87c26](https://github.com/hfutrell/BezierKit/commits/11a87c261d03ac4d0a7c8d20595b841e5307e8cb)
+It's based on the fork of [BezierKit ref 11a87c26](https://github.com/hfutrell/BezierKit/commits/11a87c261d03ac4d0a7c8d20595b841e5307e8cb)
 from June 28 of 2022 (Around LAPACK version 0.15.0).
 
 ## Features
